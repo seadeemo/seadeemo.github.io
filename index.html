@@ -66,7 +66,7 @@
   
     <article id="post-JVM" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/seadeemo.github.io/2023/04/04/JVM/" class="article-date">
+    <a href="/seadeemo.github.io/JVM/" class="article-date">
   <time datetime="2023-04-04T09:32:12.000Z" itemprop="datePublished">2023-04-04</time>
 </a>
     
@@ -78,7 +78,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/seadeemo.github.io/2023/04/04/JVM/">JVM</a>
+      <a class="article-title" href="/seadeemo.github.io/JVM/">JVM</a>
     </h1>
   
 
@@ -87,7 +87,7 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="1-自动内存管理"><a href="#1-自动内存管理" class="headerlink" title="1 自动内存管理"></a>1 自动内存管理</h2><h3 id="1-1-运行时数据区"><a href="#1-1-运行时数据区" class="headerlink" title="1.1 运行时数据区"></a>1.1 运行时数据区</h3><blockquote>
-<p><img src="./2023/04/04/JVM/image-20230329161904157.png" alt="image-20230329161904157"></p>
+<p><img src="./JVM/image-20230329161904157.png" alt="image-20230329161904157"></p>
 </blockquote>
 <h4 id="1-1-1-程序计数器"><a href="#1-1-1-程序计数器" class="headerlink" title="1.1.1 程序计数器"></a>1.1.1 程序计数器</h4><blockquote>
 <ol>
@@ -163,7 +163,7 @@
 <li>存储HashCode、GC年龄分代、锁状态标志、线程持有的锁、偏向线程ID、偏向时间戳等，结构为BitMap</li>
 <li>长度在 32 位和 64 位的虚拟机（未开启压缩指针）中分别为 32 个bit和 64 个bit</li>
 <li>其中存储的信息及其所占大小随对象加锁状态变化而变化</li>
-<li><img src="./2023/04/04/JVM/image-20230331150618069.png" alt="image-20230331150618069"></li>
+<li><img src="./JVM/image-20230331150618069.png" alt="image-20230331150618069"></li>
 </ol>
 </li>
 <li>类型指针<ol>
@@ -183,10 +183,10 @@
 <li><p>reference数据的实现并没有规定，故主流的方式有两种：句柄、直接指针</p>
 <ol>
 <li><p>堆中可能划分出一块内存作为句柄池，reference中存储句柄地址，句柄中包含对象实例数据和类型数据各自的具体地址信息。</p>
-<p><img src="./2023/04/04/JVM/image-20230331152141425.png" alt="image-20230331152141425"></p>
+<p><img src="./JVM/image-20230331152141425.png" alt="image-20230331152141425"></p>
 </li>
 <li><p>reference中存放的直接就是对象实例数据的指针</p>
-<p><img src="./2023/04/04/JVM/image-20230403150603395.png" alt="image-20230403150603395"></p>
+<p><img src="./JVM/image-20230403150603395.png" alt="image-20230403150603395"></p>
 </li>
 <li><p>使用句柄来访问的最大好处就是 reference 中存储的是稳定句柄地址，在对象被移动（垃圾收集时移动对象是非常普遍的行为）时只会改变句柄中的实例数据指针，而 reference 本身不需要被修改。</p>
 </li>
@@ -226,7 +226,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://seadeemo/seadeemo.github.io/2023/04/04/JVM/" data-id="clg23cxsf0001qg9545vvci33" class="article-share-link">Share</a>
+      <a data-url="https://seadeemo/seadeemo.github.io/JVM/" data-id="clg4eztns00008c950id402qu" class="article-share-link">Share</a>
       
       
     </footer>
@@ -238,7 +238,7 @@
   
     <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/seadeemo.github.io/2023/04/04/hello-world/" class="article-date">
+    <a href="/seadeemo.github.io/hello-world/" class="article-date">
   <time datetime="2023-04-04T04:44:49.825Z" itemprop="datePublished">2023-04-04</time>
 </a>
     
@@ -250,7 +250,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/seadeemo.github.io/2023/04/04/hello-world/">Hello World</a>
+      <a class="article-title" href="/seadeemo.github.io/hello-world/">Hello World</a>
     </h1>
   
 
@@ -275,7 +275,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://seadeemo/seadeemo.github.io/2023/04/04/hello-world/" data-id="clg23cxsb0000qg95g0am5t7f" class="article-share-link">Share</a>
+      <a data-url="https://seadeemo/seadeemo.github.io/hello-world/" data-id="clg4eztnv00018c9595ucft3r" class="article-share-link">Share</a>
       
       
     </footer>
@@ -316,11 +316,11 @@
       <ul>
         
           <li>
-            <a href="/seadeemo.github.io/2023/04/04/JVM/">JVM</a>
+            <a href="/seadeemo.github.io/JVM/">JVM</a>
           </li>
         
           <li>
-            <a href="/seadeemo.github.io/2023/04/04/hello-world/">Hello World</a>
+            <a href="/seadeemo.github.io/hello-world/">Hello World</a>
           </li>
         
       </ul>

@@ -10,21 +10,21 @@
   <meta name="description" content="1 自动内存管理1.1 运行时数据区   1.1.1 程序计数器 一块较小的内存空间 当前线程所执行的字节码的行号指示器，字节码解释器工作时就是通过改变这个计数器的值来选取下一条需要执行的字节码指令 因为多线程间涉及到线程的切换，为了线程切换后能恢复到正确的执行位置，每条线程都需要有一个独立的程序计数器，各条线程之间计数器互不影响，独立存储，这块内存区域为”线程私有”内存。 如果线程执行的是一个J">
 <meta property="og:type" content="article">
 <meta property="og:title" content="JVM">
-<meta property="og:url" content="https://seadeemo/JVM/index.html">
+<meta property="og:url" content="https://seadeemo.github.io/JVM/index.html">
 <meta property="og:site_name" content="SeaDeemo&#39;s blog">
 <meta property="og:description" content="1 自动内存管理1.1 运行时数据区   1.1.1 程序计数器 一块较小的内存空间 当前线程所执行的字节码的行号指示器，字节码解释器工作时就是通过改变这个计数器的值来选取下一条需要执行的字节码指令 因为多线程间涉及到线程的切换，为了线程切换后能恢复到正确的执行位置，每条线程都需要有一个独立的程序计数器，各条线程之间计数器互不影响，独立存储，这块内存区域为”线程私有”内存。 如果线程执行的是一个J">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://seadeemo/seadeemo.github.io/JVM/JVM/image-20230329161904157.png">
-<meta property="og:image" content="https://seadeemo/seadeemo.github.io/JVM/JVM/image-20230331150618069.png">
-<meta property="og:image" content="https://seadeemo/seadeemo.github.io/JVM/JVM/image-20230331152141425.png">
-<meta property="og:image" content="https://seadeemo/seadeemo.github.io/JVM/JVM/image-20230403150603395.png">
+<meta property="og:image" content="https://seadeemo.github.io/JVM/image-20230329161904157.png">
+<meta property="og:image" content="https://seadeemo.github.io/JVM/image-20230331150618069.png">
+<meta property="og:image" content="https://seadeemo.github.io/JVM/image-20230331152141425.png">
+<meta property="og:image" content="https://seadeemo.github.io/JVM/image-20230403150603395.png">
 <meta property="article:published_time" content="2023-04-04T09:32:12.000Z">
 <meta property="article:modified_time" content="2023-04-06T01:43:41.787Z">
 <meta property="article:author" content="HaiChenL">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://seadeemo/seadeemo.github.io/JVM/JVM/image-20230329161904157.png">
+<meta name="twitter:image" content="https://seadeemo.github.io/JVM/image-20230329161904157.png">
   
-    <link rel="alternate" href="/seadeemo.github.io/atom.xml" title="SeaDeemo&#39;s blog" type="application/atom+xml">
+    <link rel="alternate" href="/atom.xml" title="SeaDeemo&#39;s blog" type="application/atom+xml">
   
   
     <link rel="icon" href="/favicon.png">
@@ -33,7 +33,7 @@
     <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
   
   
-<link rel="stylesheet" href="/seadeemo.github.io/css/style.css">
+<link rel="stylesheet" href="/css/style.css">
 
 <meta name="generator" content="Hexo 6.3.0"></head>
 
@@ -45,7 +45,7 @@
   <div id="header-outer" class="outer">
     <div id="header-title" class="inner">
       <h1 id="logo-wrap">
-        <a href="/seadeemo.github.io/" id="logo">SeaDeemo&#39;s blog</a>
+        <a href="/" id="logo">SeaDeemo&#39;s blog</a>
       </h1>
       
     </div>
@@ -53,19 +53,19 @@
       <nav id="main-nav">
         <a id="main-nav-toggle" class="nav-icon"></a>
         
-          <a class="main-nav-link" href="/seadeemo.github.io/">Home</a>
+          <a class="main-nav-link" href="/">Home</a>
         
-          <a class="main-nav-link" href="/seadeemo.github.io/archives">Archives</a>
+          <a class="main-nav-link" href="/archives">Archives</a>
         
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/seadeemo.github.io/atom.xml" title="RSS Feed"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
         <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
       </nav>
       <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://seadeemo"></form>
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://seadeemo.github.io"></form>
       </div>
     </div>
   </div>
@@ -73,7 +73,7 @@
       <div class="outer">
         <section id="main"><article id="post-JVM" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/seadeemo.github.io/JVM/" class="article-date">
+    <a href="/JVM/" class="article-date">
   <time datetime="2023-04-04T09:32:12.000Z" itemprop="datePublished">2023-04-04</time>
 </a>
     
@@ -94,7 +94,7 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="1-自动内存管理"><a href="#1-自动内存管理" class="headerlink" title="1 自动内存管理"></a>1 自动内存管理</h2><h3 id="1-1-运行时数据区"><a href="#1-1-运行时数据区" class="headerlink" title="1.1 运行时数据区"></a>1.1 运行时数据区</h3><blockquote>
-<p><img src="/seadeemo.github.io/JVM/JVM/image-20230329161904157.png" alt="image-20230329161904157"></p>
+<p><img src="/JVM/image-20230329161904157.png" alt="image-20230329161904157"></p>
 </blockquote>
 <h4 id="1-1-1-程序计数器"><a href="#1-1-1-程序计数器" class="headerlink" title="1.1.1 程序计数器"></a>1.1.1 程序计数器</h4><ol>
 <li>一块较小的内存空间</li>
@@ -159,7 +159,7 @@
 </li>
 <li></li>
 </ol>
-<p>   <img src="/seadeemo.github.io/JVM/JVM/image-20230331150618069.png" alt="image-20230331150618069"></p>
+<p>   <img src="/JVM/image-20230331150618069.png" alt="image-20230331150618069"></p>
 </li>
 <li><p>类型指针</p>
 <ol>
@@ -179,10 +179,10 @@
 <li><p>reference数据的实现并没有规定，故主流的方式有两种：句柄、直接指针</p>
 <ol>
 <li><p>堆中可能划分出一块内存作为句柄池，reference中存储句柄地址，句柄中包含对象实例数据和类型数据各自的具体地址信息。</p>
-<p><img src="/seadeemo.github.io/JVM/JVM/image-20230331152141425.png" alt="image-20230331152141425"></p>
+<p><img src="/JVM/image-20230331152141425.png" alt="image-20230331152141425"></p>
 </li>
 <li><p>reference中存放的直接就是对象实例数据的指针</p>
-<p><img src="/seadeemo.github.io/JVM/JVM/image-20230403150603395.png" alt="image-20230403150603395"></p>
+<p><img src="/JVM/image-20230403150603395.png" alt="image-20230403150603395"></p>
 </li>
 <li><p>使用句柄来访问的最大好处就是 reference 中存储的是稳定句柄地址，在对象被移动（垃圾收集时移动对象是非常普遍的行为）时只会改变句柄中的实例数据指针，而 reference 本身不需要被修改。</p>
 </li>
@@ -215,7 +215,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://seadeemo/JVM/" data-id="clg4prx9w0000mc954xfj7f1b" class="article-share-link">Share</a>
+      <a data-url="https://seadeemo.github.io/JVM/" data-id="clg4pz2if00003s95hlb3cwz9" class="article-share-link">Share</a>
       
       
     </footer>
@@ -241,7 +241,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/seadeemo.github.io/archives/2023/04/">四月 2023</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a></li></ul>
     </div>
   </div>
 
@@ -254,7 +254,7 @@
       <ul>
         
           <li>
-            <a href="/seadeemo.github.io/JVM/">JVM</a>
+            <a href="/JVM/">JVM</a>
           </li>
         
       </ul>
@@ -277,9 +277,9 @@
     </div>
     <nav id="mobile-nav">
   
-    <a href="/seadeemo.github.io/" class="mobile-nav-link">Home</a>
+    <a href="/" class="mobile-nav-link">Home</a>
   
-    <a href="/seadeemo.github.io/archives" class="mobile-nav-link">Archives</a>
+    <a href="/archives" class="mobile-nav-link">Archives</a>
   
 </nav>
     
@@ -288,15 +288,15 @@
 
 
   
-<link rel="stylesheet" href="/seadeemo.github.io/fancybox/jquery.fancybox.css">
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
 
   
-<script src="/seadeemo.github.io/fancybox/jquery.fancybox.pack.js"></script>
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
 
 
 
 
-<script src="/seadeemo.github.io/js/script.js"></script>
+<script src="/js/script.js"></script>
 
 
 

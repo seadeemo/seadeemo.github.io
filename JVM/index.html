@@ -5,26 +5,26 @@
   
 
   
-  <title>JVM | HaiChenL&#39;s blog</title>
+  <title>JVM | SeaDeemo&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="1 自动内存管理1.1 运行时数据区   1.1.1 程序计数器 一块较小的内存空间 当前线程所执行的字节码的行号指示器，字节码解释器工作时就是通过改变这个计数器的值来选取下一条需要执行的字节码指令 因为多线程间涉及到线程的切换，为了线程切换后能恢复到正确的执行位置，每条线程都需要有一个独立的程序计数器，各条线程之间计数器互不影响，独立存储，这块内存区域为”线程私有”内存。 如果线程执行的是一个J">
 <meta property="og:type" content="article">
 <meta property="og:title" content="JVM">
-<meta property="og:url" content="https://seadeemo/seadeemo.github.io/JVM/index.html">
-<meta property="og:site_name" content="HaiChenL&#39;s blog">
+<meta property="og:url" content="https://seadeemo/JVM/index.html">
+<meta property="og:site_name" content="SeaDeemo&#39;s blog">
 <meta property="og:description" content="1 自动内存管理1.1 运行时数据区   1.1.1 程序计数器 一块较小的内存空间 当前线程所执行的字节码的行号指示器，字节码解释器工作时就是通过改变这个计数器的值来选取下一条需要执行的字节码指令 因为多线程间涉及到线程的切换，为了线程切换后能恢复到正确的执行位置，每条线程都需要有一个独立的程序计数器，各条线程之间计数器互不影响，独立存储，这块内存区域为”线程私有”内存。 如果线程执行的是一个J">
-<meta property="og:locale">
+<meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://seadeemo/seadeemo.github.io/JVM/JVM/image-20230329161904157.png">
 <meta property="og:image" content="https://seadeemo/seadeemo.github.io/JVM/JVM/image-20230331150618069.png">
 <meta property="og:image" content="https://seadeemo/seadeemo.github.io/JVM/JVM/image-20230331152141425.png">
 <meta property="og:image" content="https://seadeemo/seadeemo.github.io/JVM/JVM/image-20230403150603395.png">
 <meta property="article:published_time" content="2023-04-04T09:32:12.000Z">
-<meta property="article:modified_time" content="2023-04-06T01:08:33.307Z">
+<meta property="article:modified_time" content="2023-04-06T01:43:41.787Z">
 <meta property="article:author" content="HaiChenL">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://seadeemo/seadeemo.github.io/JVM/JVM/image-20230329161904157.png">
   
-    <link rel="alternate" href="/atom.xml" title="HaiChenL&#39;s blog" type="application/atom+xml">
+    <link rel="alternate" href="/seadeemo.github.io/atom.xml" title="SeaDeemo&#39;s blog" type="application/atom+xml">
   
   
     <link rel="icon" href="/favicon.png">
@@ -33,9 +33,9 @@
     <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
   
   
-<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/seadeemo.github.io/css/style.css">
 
-<meta name="generator" content="Hexo 5.4.2"></head>
+<meta name="generator" content="Hexo 6.3.0"></head>
 
 <body>
   <div id="container">
@@ -45,7 +45,7 @@
   <div id="header-outer" class="outer">
     <div id="header-title" class="inner">
       <h1 id="logo-wrap">
-        <a href="/" id="logo">HaiChenL&#39;s blog</a>
+        <a href="/seadeemo.github.io/" id="logo">SeaDeemo&#39;s blog</a>
       </h1>
       
     </div>
@@ -53,19 +53,19 @@
       <nav id="main-nav">
         <a id="main-nav-toggle" class="nav-icon"></a>
         
-          <a class="main-nav-link" href="/">Home</a>
+          <a class="main-nav-link" href="/seadeemo.github.io/">Home</a>
         
-          <a class="main-nav-link" href="/archives">Archives</a>
+          <a class="main-nav-link" href="/seadeemo.github.io/archives">Archives</a>
         
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/seadeemo.github.io/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
       </nav>
       <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://seadeemo/seadeemo.github.io"></form>
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://seadeemo"></form>
       </div>
     </div>
   </div>
@@ -73,7 +73,7 @@
       <div class="outer">
         <section id="main"><article id="post-JVM" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/JVM/" class="article-date">
+    <a href="/seadeemo.github.io/JVM/" class="article-date">
   <time datetime="2023-04-04T09:32:12.000Z" itemprop="datePublished">2023-04-04</time>
 </a>
     
@@ -94,7 +94,7 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="1-自动内存管理"><a href="#1-自动内存管理" class="headerlink" title="1 自动内存管理"></a>1 自动内存管理</h2><h3 id="1-1-运行时数据区"><a href="#1-1-运行时数据区" class="headerlink" title="1.1 运行时数据区"></a>1.1 运行时数据区</h3><blockquote>
-<p><img src="./JVM/image-20230329161904157.png" alt="image-20230329161904157"></p>
+<p><img src="/seadeemo.github.io/JVM/JVM/image-20230329161904157.png" alt="image-20230329161904157"></p>
 </blockquote>
 <h4 id="1-1-1-程序计数器"><a href="#1-1-1-程序计数器" class="headerlink" title="1.1.1 程序计数器"></a>1.1.1 程序计数器</h4><ol>
 <li>一块较小的内存空间</li>
@@ -120,7 +120,7 @@
 <li>几乎所有的对象实例都在堆上分配内存</li>
 <li>“新生代”“老年代”“永久代”“Eden 空间”“From Survivor 空间”“To Survivor 空间”等名词仅仅是一种经典分代，在多年前的HotSpot虚拟机中的所有垃圾收集器都采用的这种分代，但时至今日已经有很多不采用分代设计的新的垃圾收集器。</li>
 <li>可以处于物理上不连续的内存空间中，但在逻辑上是连续的。</li>
-<li> Java 堆中没有内存完成实例分配，并且堆也无法再扩展时，Java 虚拟机将会抛出 OutOfMemoryError</li>
+<li>Java 堆中没有内存完成实例分配，并且堆也无法再扩展时，Java 虚拟机将会抛出 OutOfMemoryError</li>
 </ol>
 <h4 id="1-1-5-方法区"><a href="#1-1-5-方法区" class="headerlink" title="1.1.5 方法区"></a>1.1.5 方法区</h4><ol>
 <li>线程共享的内存区域。用于存储已被虚拟机加载的类型信息、常量、静态变量、即时编译器编译后的代码缓存等数据。</li>
@@ -149,7 +149,8 @@
 </li>
 <li><p>对象头分为运行时数据（MarkWord）、类型指针</p>
 <ol>
-<li>MarkWord<ol>
+<li><p>MarkWord</p>
+<ol>
 <li><p>存储HashCode、GC年龄分代、锁状态标志、线程持有的锁、偏向线程ID、偏向时间戳等，结构为BitMap</p>
 </li>
 <li><p>长度在 32 位和 64 位的虚拟机（未开启压缩指针）中分别为 32 个bit和 64 个bit</p>
@@ -158,14 +159,16 @@
 </li>
 <li></li>
 </ol>
-   <img src="./JVM/image-20230331150618069.png" alt="image-20230331150618069"></li>
-<li>类型指针<ol>
+<p>   <img src="/seadeemo.github.io/JVM/JVM/image-20230331150618069.png" alt="image-20230331150618069"></p>
+</li>
+<li><p>类型指针</p>
+<ol>
 <li>指向对象类型元数据的指针</li>
 </ol>
 </li>
 </ol>
 </li>
-<li><p>对象中所有的各种类型的字段内容的存储顺序序会受到虚拟机分配策略参数（-XX：FieldsAllocationStyle 参数）和字段在 Java 源码中定义顺序的影响。HotSpot 虚拟机默认的分配顺序为 longs/doubles、ints、shorts/chars、bytes/booleans、oops（Ordinary Object Pointers，OOPs），可以看出相同宽度的字段总是被分配到一起存放。如果 HotSpot 虚拟机的+XX：CompactFields 参数值为true（默认就为 true），那子类之中较窄的变量也允许插入父类变量的空隙之中，以节省出一点点空间。</p>
+<li><p>对象中所有的各种类型的字段内容的存储顺序序会受到虚拟机分配策略参数（-XX：FieldsAllocationStyle 参数）和字段在 Java 源码中定义顺序的影响。HotSpot 虚拟机默认的分配顺序为 longs&#x2F;doubles、ints、shorts&#x2F;chars、bytes&#x2F;booleans、oops（Ordinary Object Pointers，OOPs），可以看出相同宽度的字段总是被分配到一起存放。如果 HotSpot 虚拟机的+XX：CompactFields 参数值为true（默认就为 true），那子类之中较窄的变量也允许插入父类变量的空隙之中，以节省出一点点空间。</p>
 </li>
 <li><p>对齐部分。HotSpot中要求对象的起始地址必须是8Byte的整数倍，故需要对齐。</p>
 </li>
@@ -176,10 +179,10 @@
 <li><p>reference数据的实现并没有规定，故主流的方式有两种：句柄、直接指针</p>
 <ol>
 <li><p>堆中可能划分出一块内存作为句柄池，reference中存储句柄地址，句柄中包含对象实例数据和类型数据各自的具体地址信息。</p>
-<p><img src="./JVM/image-20230331152141425.png" alt="image-20230331152141425"></p>
+<p><img src="/seadeemo.github.io/JVM/JVM/image-20230331152141425.png" alt="image-20230331152141425"></p>
 </li>
 <li><p>reference中存放的直接就是对象实例数据的指针</p>
-<p><img src="./JVM/image-20230403150603395.png" alt="image-20230403150603395"></p>
+<p><img src="/seadeemo.github.io/JVM/JVM/image-20230403150603395.png" alt="image-20230403150603395"></p>
 </li>
 <li><p>使用句柄来访问的最大好处就是 reference 中存储的是稳定句柄地址，在对象被移动（垃圾收集时移动对象是非常普遍的行为）时只会改变句柄中的实例数据指针，而 reference 本身不需要被修改。</p>
 </li>
@@ -212,7 +215,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://seadeemo/seadeemo.github.io/JVM/" data-id="clg4fau070000509534qo288b" class="article-share-link">Share</a>
+      <a data-url="https://seadeemo/JVM/" data-id="clg4prx9w0000mc954xfj7f1b" class="article-share-link">Share</a>
       
       
     </footer>
@@ -236,9 +239,9 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
+    <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">April 2023</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/seadeemo.github.io/archives/2023/04/">四月 2023</a></li></ul>
     </div>
   </div>
 
@@ -246,12 +249,12 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
+    <h3 class="widget-title">最新文章</h3>
     <div class="widget">
       <ul>
         
           <li>
-            <a href="/JVM/">JVM</a>
+            <a href="/seadeemo.github.io/JVM/">JVM</a>
           </li>
         
       </ul>
@@ -274,9 +277,9 @@
     </div>
     <nav id="mobile-nav">
   
-    <a href="/" class="mobile-nav-link">Home</a>
+    <a href="/seadeemo.github.io/" class="mobile-nav-link">Home</a>
   
-    <a href="/archives" class="mobile-nav-link">Archives</a>
+    <a href="/seadeemo.github.io/archives" class="mobile-nav-link">Archives</a>
   
 </nav>
     
@@ -285,15 +288,15 @@
 
 
   
-<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+<link rel="stylesheet" href="/seadeemo.github.io/fancybox/jquery.fancybox.css">
 
   
-<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script src="/seadeemo.github.io/fancybox/jquery.fancybox.pack.js"></script>
 
 
 
 
-<script src="/js/script.js"></script>
+<script src="/seadeemo.github.io/js/script.js"></script>
 
 
 

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>2.虚拟机执行子系统 | SeaDeemo&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="虚拟机执行子系统  1 类文件结构  1.1 Class文件格式   任何一个Class文件对应的是一个唯一的类或者接口的定义信息，但是类或者接口并不一定非要定义在文件中（可以通过动态生成直接送入类加载器中），所谓的Class文件格式只是任何一个类或者接口应当满足的格式。   Class文件是一组以8个字节为基础单位的二进制流，各个数据项目严格按照顺序排列在文件之中，中间没有分隔符，所以其中存储">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2.虚拟机执行子系统">
+<meta property="og:url" content="https://seadeemo.github.io/2.%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%89%A7%E8%A1%8C%E5%AD%90%E7%B3%BB%E7%BB%9F/index.html">
+<meta property="og:site_name" content="SeaDeemo&#39;s blog">
+<meta property="og:description" content="虚拟机执行子系统  1 类文件结构  1.1 Class文件格式   任何一个Class文件对应的是一个唯一的类或者接口的定义信息，但是类或者接口并不一定非要定义在文件中（可以通过动态生成直接送入类加载器中），所谓的Class文件格式只是任何一个类或者接口应当满足的格式。   Class文件是一组以8个字节为基础单位的二进制流，各个数据项目严格按照顺序排列在文件之中，中间没有分隔符，所以其中存储">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://seadeemo.github.io/2.%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%89%A7%E8%A1%8C%E5%AD%90%E7%B3%BB%E7%BB%9F/image-20230417104559331.png">
+<meta property="article:published_time" content="2023-04-17T02:49:00.000Z">
+<meta property="article:modified_time" content="2023-04-17T02:51:19.829Z">
+<meta property="article:author" content="HaiChenL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://seadeemo.github.io/2.%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%89%A7%E8%A1%8C%E5%AD%90%E7%B3%BB%E7%BB%9F/image-20230417104559331.png">
+  
+    <link rel="alternate" href="/atom.xml" title="SeaDeemo&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">SeaDeemo&#39;s blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://seadeemo.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-2.虚拟机执行子系统" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2.%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%89%A7%E8%A1%8C%E5%AD%90%E7%B3%BB%E7%BB%9F/" class="article-date">
+  <time datetime="2023-04-17T02:49:00.000Z" itemprop="datePublished">2023-04-17</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JVM/">JVM</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      2.虚拟机执行子系统
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="虚拟机执行子系统"><a class="markdownIt-Anchor" href="#虚拟机执行子系统"></a> 虚拟机执行子系统</h1>
+<h2 id="1-类文件结构"><a class="markdownIt-Anchor" href="#1-类文件结构"></a> 1 类文件结构</h2>
+<h3 id="11-class文件格式"><a class="markdownIt-Anchor" href="#11-class文件格式"></a> 1.1 Class文件格式</h3>
+<ol>
+<li>
+<p>任何一个Class文件对应的是一个唯一的类或者接口的定义信息，但是类或者接口并不一定非要定义在文件中（可以通过动态生成直接送入类加载器中），所谓的Class文件格式只是任何一个类或者接口应当满足的格式。</p>
+</li>
+<li>
+<p>Class文件是一组以8个字节为基础单位的二进制流，各个数据项目严格按照顺序排列在文件之中，中间没有分隔符，所以其中存储的内容几乎全部是程序运行的必要数据。如果由占用8字节以上的数据项时，会按照高位在前（Big-Endian，高位字节存储在在地址最低位，而低位字节在地址最高位）的方式分割成若干个8字节进行存储。</p>
+</li>
+<li>
+<p>Class文件格式采用一种类似C语言中结构体的伪结构来存储数据，该伪结构中只有两种数据类型：无符号数、表。</p>
+<ol>
+<li>
+<p>无符号数：基本的数据类型，以u1、u2、u4、u8来分别表示1、2、4、8个字节的无符号数，无符号数可以用来描述数字、索引引用、数量值或者UTF-8编码的字符串值。</p>
+</li>
+<li>
+<p>表：是由多个无符号数或其他表作为数据项构成的复合数据类型，为便于区分，所有表命名都习惯以_info结尾。整个Class文件本质上也可以看作一张表。</p>
+<p><img src="/2.%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%89%A7%E8%A1%8C%E5%AD%90%E7%B3%BB%E7%BB%9F/image-20230417104559331.png" alt="Class文件格式"></p>
+</li>
+</ol>
+</li>
+<li>
+<p>无论是无符号数还是表，当需要描述同一类型但数量不定的多个数据时，经常会使用一个前置的容量计数器加若干个连续的数据项的形式，这时候称这一系列连续的某一类型的数据为某一类型的“集合”。</p>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://seadeemo.github.io/2.%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%89%A7%E8%A1%8C%E5%AD%90%E7%B3%BB%E7%BB%9F/" data-id="clgkmkynn0002yg95e09hdd9d" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/03.schema%E7%9A%84%E8%AE%BE%E8%AE%A1/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">3.schema的设计</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/JVM/">JVM</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2.%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%89%A7%E8%A1%8C%E5%AD%90%E7%B3%BB%E7%BB%9F/">2.虚拟机执行子系统</a>
+          </li>
+        
+          <li>
+            <a href="/03.schema%E7%9A%84%E8%AE%BE%E8%AE%A1/">3.schema的设计</a>
+          </li>
+        
+          <li>
+            <a href="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/">1.MySQL的架构</a>
+          </li>
+        
+          <li>
+            <a href="/2.%E4%BC%98%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AE%BE%E7%BD%AE/">2.优化服务器设置</a>
+          </li>
+        
+          <li>
+            <a href="/1.%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">1.自动内存管理</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2023 HaiChenL<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

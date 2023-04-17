@@ -7,15 +7,15 @@
   
   <title>3.schema的设计 | SeaDeemo&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="1 数据类型  1.1 整数类型 分别有TINYINT、SMALLINT、MEDIUMINT、INT、BIGINT，分别使用8、16、24、32、64位的存储空间，存储值的范围是 −2(N−1)到2(N−1)−1-2^{(N-1)} 到 2^{(N-1)}-1 −2(N−1)到2(N−1)−1 对于类型的选择，这些只会影响MySql对于这些数据在磁盘和内存中的保存方式，整数的计算通常都会使用BI">
+  <meta name="description" content="SCHEMA的设计  1 数据类型  1.1 整数类型 分别有TINYINT、SMALLINT、MEDIUMINT、INT、BIGINT，分别使用8、16、24、32、64位的存储空间，存储值的范围是 −2(N−1)到2(N−1)−1-2^{(N-1)} 到 2^{(N-1)}-1 −2(N−1)到2(N−1)−1 对于类型的选择，这些只会影响MySql对于这些数据在磁盘和内存中的保存方式，整数">
 <meta property="og:type" content="article">
 <meta property="og:title" content="3.schema的设计">
 <meta property="og:url" content="https://seadeemo.github.io/03.schema%E7%9A%84%E8%AE%BE%E8%AE%A1/index.html">
 <meta property="og:site_name" content="SeaDeemo&#39;s blog">
-<meta property="og:description" content="1 数据类型  1.1 整数类型 分别有TINYINT、SMALLINT、MEDIUMINT、INT、BIGINT，分别使用8、16、24、32、64位的存储空间，存储值的范围是 −2(N−1)到2(N−1)−1-2^{(N-1)} 到 2^{(N-1)}-1 −2(N−1)到2(N−1)−1 对于类型的选择，这些只会影响MySql对于这些数据在磁盘和内存中的保存方式，整数的计算通常都会使用BI">
+<meta property="og:description" content="SCHEMA的设计  1 数据类型  1.1 整数类型 分别有TINYINT、SMALLINT、MEDIUMINT、INT、BIGINT，分别使用8、16、24、32、64位的存储空间，存储值的范围是 −2(N−1)到2(N−1)−1-2^{(N-1)} 到 2^{(N-1)}-1 −2(N−1)到2(N−1)−1 对于类型的选择，这些只会影响MySql对于这些数据在磁盘和内存中的保存方式，整数">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2023-04-14T08:39:12.000Z">
-<meta property="article:modified_time" content="2023-04-14T08:39:57.537Z">
+<meta property="article:published_time" content="2023-04-16T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-04-17T09:19:43.471Z">
 <meta property="article:author" content="HaiChenL">
 <meta name="twitter:card" content="summary">
   
@@ -69,7 +69,7 @@
         <section id="main"><article id="post-03.schema的设计" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/03.schema%E7%9A%84%E8%AE%BE%E8%AE%A1/" class="article-date">
-  <time datetime="2023-04-14T08:39:12.000Z" itemprop="datePublished">2023-04-14</time>
+  <time datetime="2023-04-16T16:00:00.000Z" itemprop="datePublished">2023-04-17</time>
 </a>
     
   <div class="article-category">
@@ -92,18 +92,20 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h3 id="1-数据类型"><a class="markdownIt-Anchor" href="#1-数据类型"></a> 1 数据类型</h3>
-<h4 id="11-整数类型"><a class="markdownIt-Anchor" href="#11-整数类型"></a> 1.1 整数类型</h4>
+        <h1 id="schema的设计"><a class="markdownIt-Anchor" href="#schema的设计"></a> SCHEMA的设计</h1>
+<h2 id="1-数据类型"><a class="markdownIt-Anchor" href="#1-数据类型"></a> 1 数据类型</h2>
+<h3 id="11-整数类型"><a class="markdownIt-Anchor" href="#11-整数类型"></a> 1.1 整数类型</h3>
 <p>分别有TINYINT、SMALLINT、MEDIUMINT、INT、BIGINT，分别使用8、16、24、32、64位的存储空间，存储值的范围是</p>
 <p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>−</mo><msup><mn>2</mn><mrow><mo stretchy="false">(</mo><mi>N</mi><mo>−</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></msup><mi mathvariant="normal">到</mi><msup><mn>2</mn><mrow><mo stretchy="false">(</mo><mi>N</mi><mo>−</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></msup><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">-2^{(N-1)} 到 2^{(N-1)}-1
 </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0213299999999998em;vertical-align:-0.08333em;"></span><span class="mord">−</span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.938em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mopen mtight">(</span><span class="mord mathdefault mtight" style="margin-right:0.10903em;">N</span><span class="mbin mtight">−</span><span class="mord mtight">1</span><span class="mclose mtight">)</span></span></span></span></span></span></span></span></span><span class="mord cjk_fallback">到</span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.938em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mopen mtight">(</span><span class="mord mathdefault mtight" style="margin-right:0.10903em;">N</span><span class="mbin mtight">−</span><span class="mord mtight">1</span><span class="mclose mtight">)</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">1</span></span></span></span></span></p>
 <p>对于类型的选择，这些只会影响MySql对于这些数据在磁盘和内存中的保存方式，整数的计算通常都会使用BIGINT来计算（一些聚合函数除外）。</p>
 <p>整数类型有可选的UNSIGNED属性，表示不允许为负数。同时，MySql的整数类型也可以指定宽度，但是通常来说没有意义，这并不会限制值的合法范围，只是规定了交互工具上显示字符的个数，存储、计算的消耗是没有变化的。</p>
-<h4 id="12-实数类型"><a class="markdownIt-Anchor" href="#12-实数类型"></a> 1.2 实数类型</h4>
+<h3 id="12-实数类型"><a class="markdownIt-Anchor" href="#12-实数类型"></a> 1.2 实数类型</h3>
 <p>分别有浮点类型的FLOAT、DOUBLE以及可以精确计算的定点类型的DECIMAL，FLOAT和DOUBLE类型分别占用4字节和8字节的空间，同时对于浮点类型的计算，MySql会使用DOUBLE类型。</p>
 <p>DECIMAL可以通过一个或两个参数来指定精度及范围，如DECIMAL(p,s)指总位数为p位，小数位为s位，默认情况下p为10，s为0、DECIMAL§指总位数为p位，小数位为0 。</p>
+<p>对于Decimal，MySQL会将数字打包保存进一个二进制字符串中(每4个字节村9个数字)，比如Decimal(18,9)就需要使用9个字节，小数点左边的9个数字占4字节，右边的9个数字占4字节，小数点占一字节。</p>
 <p>由于额外的空间成本和计算成本问题，应该尽量只在需要精确计算小数的场景下使用DECIMAL，例如财务管理系统；但是如果数据量很大，可以考虑使用BIGINT来代替：将需要存储的数据乘以一定的系数从而变成一个最小整数存入MySql中。</p>
-<h4 id="13-字符串类型"><a class="markdownIt-Anchor" href="#13-字符串类型"></a> 1.3 字符串类型</h4>
+<h3 id="13-字符串类型"><a class="markdownIt-Anchor" href="#13-字符串类型"></a> 1.3 字符串类型</h3>
 <ol>
 <li>
 <p>VARCHAR、CHAR</p>
@@ -111,21 +113,81 @@
 <ol>
 <li>
 <p>VARCHAR是长度可变的字符串，所以需要额外的1或2字节用以存储字符串的长度：如果列的最大长度&lt;=255字节，则需要一个字节存储字符串长度；否则使用两个字节。假设使用latin1字符集，一个VARCHAR(10)的列需要11字节的存储空间，而VARCHAR(1000)的列需要1002字节的存储空间。</p>
-<p>由于VARCHAR的长度可变，故更新时有可能会变化，这会导致额外的工作。如果行的增长使得原来位置无法容纳更多的内容，不同处理引擎会采取不同的操作来处理。</p>
+<p>由于VARCHAR的长度可变，故更新时有可能会变化，这会导致额外的工作。如果行的增长使得原来位置无法容纳更多的内容，不同处理引擎会采取不同的操作来处理，InnoDB会分裂页使行可以放进页内。</p>
 <p>以下场景适合使用VARCHAR：字符串列的最大长度远大于平均长度；列的更新比较少；使用了UTF-8这样的字符集，每个字符使用不同的字节数来存储。</p>
 </li>
 <li>
-<p>CHAR是固定长度的字符串，适合存储非常短的字符串，或者值的长度基本相同的字符串。</p>
+<p>CHAR是固定长度的字符串，适合存储非常短的字符串，或者值的长度基本相同的字符串。在存储CHAR值时，MySQL会删除所有的末尾空格，而在比较时MySQL又会根据需要填充空格。</p>
+</li>
+<li>
+<p>如果需要一列存储true\false，可以使用CHAR(0)来存储，该列可以允许null和空字符串。</p>
+</li>
+</ol>
+</li>
+<li>
+<p>BLOB和TEXT</p>
+<ol>
+<li>BLOB和TEXT都是为了存储很大数据而设计的字符串数据类型，分别采用二进制和字符方式存储。</li>
+<li>TEXT类型有TINYTEXT、SMALLTEXT、TEXT、MEDIUMTEXT、LONGTEXT，BLOB有TINYBLOB、SMALLBLOB、BLOB、MEDIUMBLOB、LONGBLOB。</li>
+<li>MySQL会将TEXT和BLOB当作独立的对象处理，存储引擎在存储时通常会做特殊处理。当BLOB和TEXT的值太大时，InnoDB会使用专门的“外部”存储区域来进行存储，此时每个值需要1~4个字节的空间存储一个指针，在外部区域存储实际的值。</li>
+<li>MySQL不能将BLOB和TEXT数据类型的完整字符串放入索引，也不能使用索引进行排序。</li>
+</ol>
+</li>
+<li>
+<p>枚举(ENUM)</p>
+<ol>
+<li>
+<p>枚举列可以把一些不重复的字符存成一个预定义的集合，MySQL在存储枚举时非常紧凑，会根据列表值的数量压缩到一个或两个字节中。</p>
+</li>
+<li>
+<p>使用如下建表语句</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> enum_test(</span><br><span class="line">	e enum(<span class="string">&#x27;fish&#x27;</span>,<span class="string">&#x27;apple&#x27;</span>,<span class="string">&#x27;dog&#x27;</span>) <span class="keyword">not</span> <span class="keyword">null</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p>添加数据</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> enum_test(e) <span class="keyword">values</span>(<span class="string">&#x27;fish&#x27;</span>,<span class="string">&#x27;dog&#x27;</span>,<span class="string">&#x27;apple&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>实际上这三行数据存储的时整数，而不是字符串，例如以下SQL的执行结果为1，3，2</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> e<span class="operator">+</span><span class="number">0</span> <span class="keyword">from</span> enum_test;</span><br></pre></td></tr></table></figure>
+<p>但是这里可以看到，枚举的值是在表定义时候传入的，也就是说，想要修改enum的值也必须修改表的定义，并且只能新增，不能删除枚举值。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 这条语句是可以执行的，最终枚举值会新增一个cat</span></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> enum_test </span><br><span class="line">modify <span class="keyword">column</span> e enum(<span class="string">&#x27;fish&#x27;</span>,<span class="string">&#x27;apple&#x27;</span>,<span class="string">&#x27;dog&#x27;</span>,<span class="string">&#x27;cat&#x27;</span>) <span class="keyword">not</span> <span class="keyword">null</span> defalut <span class="string">&#x27;a&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 这条语句是不能执行的，MySQL会报错</span></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> enum_test </span><br><span class="line">modify <span class="keyword">column</span> e enum(<span class="string">&#x27;fish&#x27;</span>,<span class="string">&#x27;apple&#x27;</span>) <span class="keyword">not</span> <span class="keyword">null</span> defalut <span class="string">&#x27;a&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p>需要注意，即使给枚举列设定了默认值，当新增时传入的值不在枚举值范围内时，会报错。</p>
+</li>
+<li>
+<p>对于枚举来说，由于存储时是将每个枚举值存储为整数，所以查找时需要将整数转换为字符串后才可以。对于存储时的开销，枚举更小；对于枚举和枚举的关联查询，比varchar和varchar的关联查询更快，但是枚举和varchar的关联查询则更慢。</p>
 </li>
 </ol>
 </li>
 </ol>
-<link href="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/KaTeX/0.10.2/katex.min.css" rel="stylesheet">
+<h3 id="14-日期和时间类型"><a class="markdownIt-Anchor" href="#14-日期和时间类型"></a> 1.4 日期和时间类型</h3>
+<ol>
+<li>
+<p>DATETIME</p>
+<p>可以保存大范围的值，从1001年到9999年，精度为秒。它将日期封装进格式为YYYYMMDDHHMMSS的整数当中，与时区无关，使用8字节的存储空间。</p>
+</li>
+<li>
+<p>TIMESTAMP</p>
+<p>保存了从1970年1月1日物业以来的秒数，只使用4字节的存储空间，只能表示从1970年到2038年。TIMESTAMP显示的值依赖于时区，而DATETIME保留文本表示的日期和时间。</p>
+<p>TIMESTAMP默认为NOT NULL。</p>
+</li>
+<li>
+<p>通常情况下应该尽量使用TIMESTAMP，因为比DATETIME的空间效率更高，如果需要存储更小粒度的时间或者更大范围的时间怎么办？可以使用BIGINT存储微妙级别的时间戳，也可以使用DOUBLE存储秒之后的小数部位。</p>
+</li>
+<li>
+<p>关于时区的问题，目前主流的处理方式是将日期时间存储为时间戳，并以协调世界时(UTC)的形式，避免MySQL处理的复杂性。</p>
+</li>
+</ol>
+<h3 id="15-位数据类型"><a class="markdownIt-Anchor" href="#15-位数据类型"></a> 1.5 位数据类型</h3>
+<ol>
+<li>
+<p>BIT</p>
+<p>BIT(1)定义一个包含1个位的字段，BIT(2)定义包含2个位的字段，BIT列的最大长度为64位。也就是说，定义一个BIT(4)的字段，可以在这一列中存储4个true\false的值。</p>
+<p>然而MySQL会把BIT当作字符串类型，而不是数字类型，这是很奇怪的。例如存储一个b ‘00111001’的值（二进制值位57）到BIT(8)的列内并检索他，得到的结果是’9’（ASCII码为57的字符），但是如果检索b+0得到的就是57（因为是数字上下文）。</p>
+<p>如果需要列保存单个true\false的值，可以使用CHAR(0)；如果需要保存多个true\false的值，可以使用SET，</p>
+</li>
+</ol>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://seadeemo.github.io/03.schema%E7%9A%84%E8%AE%BE%E8%AE%A1/" data-id="clggb2zs20001yk951msgewzv" class="article-share-link">Share</a>
+      <a data-url="https://seadeemo.github.io/03.schema%E7%9A%84%E8%AE%BE%E8%AE%A1/" data-id="clgkmkynl0001yg95hevr5u7k" class="article-share-link">Share</a>
       
       
     </footer>
@@ -134,10 +196,19 @@
     
 <nav id="article-nav">
   
+    <a href="/2.%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%89%A7%E8%A1%8C%E5%AD%90%E7%B3%BB%E7%BB%9F/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          2.虚拟机执行子系统
+        
+      </div>
+    </a>
   
-    <a href="/2.%E4%BC%98%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AE%BE%E7%BD%AE/" id="article-nav-older" class="article-nav-link-wrap">
+  
+    <a href="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">2.优化服务器设置</div>
+      <div class="article-nav-title">1.MySQL的架构</div>
     </a>
   
 </nav>
@@ -181,15 +252,19 @@
       <ul>
         
           <li>
+            <a href="/2.%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%89%A7%E8%A1%8C%E5%AD%90%E7%B3%BB%E7%BB%9F/">2.虚拟机执行子系统</a>
+          </li>
+        
+          <li>
             <a href="/03.schema%E7%9A%84%E8%AE%BE%E8%AE%A1/">3.schema的设计</a>
           </li>
         
           <li>
-            <a href="/2.%E4%BC%98%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AE%BE%E7%BD%AE/">2.优化服务器设置</a>
+            <a href="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/">1.MySQL的架构</a>
           </li>
         
           <li>
-            <a href="/1.MySql%E7%9A%84%E6%9E%B6%E6%9E%84/">1.MySql的架构</a>
+            <a href="/2.%E4%BC%98%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AE%BE%E7%BD%AE/">2.优化服务器设置</a>
           </li>
         
           <li>

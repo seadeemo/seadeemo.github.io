@@ -30,8 +30,9 @@
 <meta property="og:image" content="https://seadeemo.github.io/1.%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/image-20230410111802333.png">
 <meta property="og:image" content="https://seadeemo.github.io/1.%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/image-20230410113145479.png">
 <meta property="og:image" content="https://seadeemo.github.io/1.%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/image-20230411135009040.png">
+<meta property="og:image" content="https://seadeemo.github.io/1.%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/%E6%9C%AA%E5%91%BD%E5%90%8D%E6%96%87%E4%BB%B6.png">
 <meta property="article:published_time" content="2023-04-04T09:32:12.000Z">
-<meta property="article:modified_time" content="2023-04-14T08:06:22.834Z">
+<meta property="article:modified_time" content="2023-04-17T02:24:24.836Z">
 <meta property="article:author" content="HaiChenL">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://seadeemo.github.io/1.%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/image-20230329161904157.png">
@@ -177,6 +178,10 @@
 <ol>
 <li>比如NIO中DirectByteBuffer对象可以直接对直接内存的引用进行操作。</li>
 <li>当需要动态扩展时超出了本机总内存的大小时，抛出OutOfMemoryError。</li>
+</ol>
+<h3 id="17-执行引擎"><a class="markdownIt-Anchor" href="#17-执行引擎"></a> 1.7 执行引擎</h3>
+<ol>
+<li>分为解释器和即时编译器两个部分，解释器将字节码文件逐行解释为机器码，由于每一次执行都需要解释对应字节码为机器码，效率较低；而即时编译器是将字节码文件一次性编译为机器码文件，效率较高。当方法被多次调用时，JVM会使用即时编译器编译该字节码，从而提高执行效率。</li>
 </ol>
 <h2 id="2-hotspot虚拟机中的对象"><a class="markdownIt-Anchor" href="#2-hotspot虚拟机中的对象"></a> 2 HotSpot虚拟机中的对象</h2>
 <h3 id="21-普通对象的创建不包括数组和class对象"><a class="markdownIt-Anchor" href="#21-普通对象的创建不包括数组和class对象"></a> 2.1 普通对象的创建（不包括数组和Class对象）</h3>
@@ -439,7 +444,7 @@
 <h4 id="331-serial收集器新生代"><a class="markdownIt-Anchor" href="#331-serial收集器新生代"></a> 3.3.1 Serial收集器（新生代）</h4>
 <ol>
 <li>
-<p>单线程工作的垃圾收集器（在垃圾收集时，必须暂停其他的工作线程）。</p>
+<p>采用标记复制算法、单线程工作的垃圾收集器（在垃圾收集时，必须暂停其他的工作线程）。</p>
 <p><img src="/1.%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/image-20230410105447830.png" alt="Serial/Serial Old垃圾收集器运行示意图"></p>
 </li>
 <li>
@@ -520,21 +525,51 @@
 <li></li>
 </ol>
 <p><img src="/1.%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/image-20230411135009040.png" alt="G1收集器Region分区示意图"></p>
-<ol start="5">
+</li>
 <li>
 <p>G1的一些问题</p>
 <ol>
-<li>如何解决跨Region引用问题？可以使用记忆集来避免全堆的扫描。但是在G1中，每个Region都需要维护自己的记忆集，这个记忆集本质上是一种哈希表，Key是其他Region的起始地址，Value是一个卡表索引号的集合。</li>
-</ol>
+<li>
+<p>如何解决跨Region引用问题？可以使用记忆集来避免全堆的扫描。但是在G1中，每个Region都需要维护自己的记忆集，这种记忆集在CardTable基础上增加了哈希表，Key是其他Region的起始地址，Value是一个卡表索引号的集合，也就是说每个Region的记忆集元素数量都有Region总数-1个，key代表其他的Region，value代表该Region中的哪些卡页指向了自己Region中的对象；同时，如果该CardTable中对应元素的卡页指向了其他Region的对象，那么对应元素的值为1（变脏了）。这种记忆集比之前的记忆集都复杂，并且Region的数量明显大于分代数量，所以内存占用比较大。通常来说，G1至少需要Java堆容量10%-20%的额外内存来维持工作</p>
+<p><img src="/1.%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/%E6%9C%AA%E5%91%BD%E5%90%8D%E6%96%87%E4%BB%B6.png" alt="G1中的记忆集中HashTable的结构"></p>
+</li>
+<li>
+<p>如何解决并发标记过程中用户线程并发执行导致错误的问题？G1使用的是原始快照的方式。那么如何解决垃圾回收过程中新对象的创建问题呢？G1为每个Region设计了两个TAMS(Top at Mark Start)的指针，分别为previous TAMS和next TAMS，分别代表上一轮并发标记中隐式存活的top指针和这一轮存活的top指针。</p>
+<p>bottom---------previous TAMS----------next TAMS----------top</p>
+<p>previous TAMS—next TAMS之间的对象就是上一次隐式标记存活的对象，next TAMS—top之间的对象就是此次并发标记隐式标记存活的对象。</p>
+<p>同时，G1也有CMS的毛病：如果内存回收的速度赶不上内存分配的速度，那么G1也会冻结用户线程执行FULL GC导致长时间的STT。</p>
+</li>
+<li>
+<p>G1如何建立起可靠的停顿预测模型呢？G1的停顿预测模型是以衰减均值为理论基础实现的，所谓的衰减均值就是更容易受到新数据印象的平均值。G1会记录每个Region的回收耗时、每个Region记忆集的脏卡数量等每一个可以测量的步骤花费的成本，并分析得出平均值、标准偏差、置信度等统计信息，通过这些信息来预测由哪些Region组成回收集才不会超过期望停顿时间。</p>
 </li>
 </ol>
+</li>
+<li>
+<p>G1的运行过程：</p>
+<ol>
+<li>
+<p>初始标记：标记GC Roots，修改TAMS指针，让下一阶段用户线程并发时，可以正确的在可用Region中分配对象。借用进行Minor GC的时候同步完成？</p>
+</li>
+<li>
+<p>并发标记：开始进行可达性分析，并且在对象图扫描完成后，处理原始快照（SATB）记录的在并发时引用变动的对象。</p>
+</li>
+<li>
+<p>最终标记：短暂的STT，处理SATB记录。</p>
+</li>
+<li>
+<p>筛选回收：更新Region的统计数据，对各个Region的回收价值和成本进行排序，根据用户期望停顿时间选择任意多个Region组成回收集，将回收集Region中的存活对象复制到空的Region中，将旧Region直接回收。因为这一部分需要移动对象，必须STT，由多条垃圾回收线程并行完成。</p>
+</li>
+<li></li>
+</ol>
+<pre><code>  ![G1收集器运行示意图](./1.自动内存管理/image-20230417101430386.png)
+</code></pre>
 </li>
 </ol>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://seadeemo.github.io/1.%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" data-id="clggb2zs90009yk9589gebgg0" class="article-share-link">Share</a>
+      <a data-url="https://seadeemo.github.io/1.%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" data-id="clgkmkynt000cyg9527fd3qon" class="article-share-link">Share</a>
       
       
     </footer>
@@ -543,11 +578,11 @@
     
 <nav id="article-nav">
   
-    <a href="/1.MySql%E7%9A%84%E6%9E%B6%E6%9E%84/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2.%E4%BC%98%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AE%BE%E7%BD%AE/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          1.MySql的架构
+          2.优化服务器设置
         
       </div>
     </a>
@@ -594,15 +629,19 @@
       <ul>
         
           <li>
+            <a href="/2.%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%89%A7%E8%A1%8C%E5%AD%90%E7%B3%BB%E7%BB%9F/">2.虚拟机执行子系统</a>
+          </li>
+        
+          <li>
             <a href="/03.schema%E7%9A%84%E8%AE%BE%E8%AE%A1/">3.schema的设计</a>
           </li>
         
           <li>
-            <a href="/2.%E4%BC%98%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AE%BE%E7%BD%AE/">2.优化服务器设置</a>
+            <a href="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/">1.MySQL的架构</a>
           </li>
         
           <li>
-            <a href="/1.MySql%E7%9A%84%E6%9E%B6%E6%9E%84/">1.MySql的架构</a>
+            <a href="/2.%E4%BC%98%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AE%BE%E7%BD%AE/">2.优化服务器设置</a>
           </li>
         
           <li>

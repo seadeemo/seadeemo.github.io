@@ -5,23 +5,23 @@
   
 
   
-  <title>1.MySql的架构 | SeaDeemo&#39;s blog</title>
+  <title>1.MySQL的架构 | SeaDeemo&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="1 MySql的逻辑架构   第一层包括连接处理、身份验证、确保安全性等。 大多数MySQL的核心功能都在这一层，包括查询解析、分析、优化、以及所有的内置函数（例如，日期、时间、数学和加密函数），所有跨存储引擎的功能也都在这一层实现：存储过程、触发器、视图等。 第三层是存储引擎层。存储引擎负责MySQL中数据的存储和提取。服务器通过存储引擎API进行通信。这些API屏蔽了不同存储引擎之间的差异，">
+  <meta name="description" content="1 MySQL的逻辑架构   第一层包括连接处理、身份验证、确保安全性等。 大多数MySQL的核心功能都在这一层，包括查询解析、分析、优化、以及所有的内置函数（例如，日期、时间、数学和加密函数），所有跨存储引擎的功能也都在这一层实现：存储过程、触发器、视图等。 第三层是存储引擎层。存储引擎负责MySQL中数据的存储和提取。服务器通过存储引擎API进行通信。这些API屏蔽了不同存储引擎之间的差异，">
 <meta property="og:type" content="article">
-<meta property="og:title" content="1.MySql的架构">
-<meta property="og:url" content="https://seadeemo.github.io/1.MySql%E7%9A%84%E6%9E%B6%E6%9E%84/index.html">
+<meta property="og:title" content="1.MySQL的架构">
+<meta property="og:url" content="https://seadeemo.github.io/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/index.html">
 <meta property="og:site_name" content="SeaDeemo&#39;s blog">
-<meta property="og:description" content="1 MySql的逻辑架构   第一层包括连接处理、身份验证、确保安全性等。 大多数MySQL的核心功能都在这一层，包括查询解析、分析、优化、以及所有的内置函数（例如，日期、时间、数学和加密函数），所有跨存储引擎的功能也都在这一层实现：存储过程、触发器、视图等。 第三层是存储引擎层。存储引擎负责MySQL中数据的存储和提取。服务器通过存储引擎API进行通信。这些API屏蔽了不同存储引擎之间的差异，">
+<meta property="og:description" content="1 MySQL的逻辑架构   第一层包括连接处理、身份验证、确保安全性等。 大多数MySQL的核心功能都在这一层，包括查询解析、分析、优化、以及所有的内置函数（例如，日期、时间、数学和加密函数），所有跨存储引擎的功能也都在这一层实现：存储过程、触发器、视图等。 第三层是存储引擎层。存储引擎负责MySQL中数据的存储和提取。服务器通过存储引擎API进行通信。这些API屏蔽了不同存储引擎之间的差异，">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://seadeemo.github.io/1.MySql%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230406153830107.png">
-<meta property="og:image" content="https://seadeemo.github.io/1.MySql%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230406163634712.png">
-<meta property="og:image" content="https://seadeemo.github.io/1.MySql%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230407180427115.png">
-<meta property="article:published_time" content="2023-04-14T08:08:44.510Z">
-<meta property="article:modified_time" content="2023-04-14T08:08:00.061Z">
+<meta property="og:image" content="https://seadeemo.github.io/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230406153830107.png">
+<meta property="og:image" content="https://seadeemo.github.io/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230406163634712.png">
+<meta property="og:image" content="https://seadeemo.github.io/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230407180427115.png">
+<meta property="article:published_time" content="2023-04-16T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-04-17T09:19:55.506Z">
 <meta property="article:author" content="HaiChenL">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://seadeemo.github.io/1.MySql%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230406153830107.png">
+<meta name="twitter:image" content="https://seadeemo.github.io/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230406153830107.png">
   
     <link rel="alternate" href="/atom.xml" title="SeaDeemo&#39;s blog" type="application/atom+xml">
   
@@ -70,10 +70,10 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-1.MySql的架构" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-1.MySQL的架构" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/1.MySql%E7%9A%84%E6%9E%B6%E6%9E%84/" class="article-date">
-  <time datetime="2023-04-14T08:08:44.510Z" itemprop="datePublished">2023-04-14</time>
+    <a href="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/" class="article-date">
+  <time datetime="2023-04-16T16:00:00.000Z" itemprop="datePublished">2023-04-17</time>
 </a>
     
   <div class="article-category">
@@ -88,7 +88,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      1.MySql的架构
+      1.MySQL的架构
     </h1>
   
 
@@ -96,8 +96,8 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="1-mysql的逻辑架构"><a class="markdownIt-Anchor" href="#1-mysql的逻辑架构"></a> 1 MySql的逻辑架构</h2>
-<p><img src="/1.MySql%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230406153830107.png" alt="MySql的逻辑架构"></p>
+        <h2 id="1-mysql的逻辑架构"><a class="markdownIt-Anchor" href="#1-mysql的逻辑架构"></a> 1 MySQL的逻辑架构</h2>
+<p><img src="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230406153830107.png" alt="MySQL的逻辑架构"></p>
 <ol>
 <li>第一层包括连接处理、身份验证、确保安全性等。</li>
 <li>大多数MySQL的核心功能都在这一层，包括查询解析、分析、优化、以及所有的内置函数（例如，日期、时间、数学和加密函数），所有跨存储引擎的功能也都在这一层实现：存储过程、触发器、视图等。</li>
@@ -110,12 +110,12 @@
 </ol>
 <h3 id="12-优化与执行"><a class="markdownIt-Anchor" href="#12-优化与执行"></a> 1.2 优化与执行</h3>
 <ol>
-<li>MySql解析查询后会创建解析树，并对齐进行各种优化，如重写查询、决定表的读取顺序、选择合适的索引等。</li>
+<li>MySQL解析查询后会创建解析树，并对齐进行各种优化，如重写查询、决定表的读取顺序、选择合适的索引等。</li>
 <li>优化器并不关心使用的是什么存储引擎，但是因为存储引擎堆查询优化的结果有一定影响，所以优化器会询问存储引擎的一些功能或操作的成本，以及表数据的统计信息，从而更好的优化。</li>
-<li>旧版本中MySql有内部查询缓存可以直接返回查询结果，但是从5.7.20开始，查询缓存被标注为弃用的特性，在8.0中完全移除。</li>
+<li>旧版本中MySQL有内部查询缓存可以直接返回查询结果，但是从5.7.20开始，查询缓存被标注为弃用的特性，在8.0中完全移除。</li>
 </ol>
 <h2 id="2-并发控制"><a class="markdownIt-Anchor" href="#2-并发控制"></a> 2 并发控制</h2>
-<p>从服务器级别和存储引擎级别，简要的讨论下MySql的并发控制。</p>
+<p>从服务器级别和存储引擎级别，简要的讨论下MySQL的并发控制。</p>
 <h3 id="21-读写锁"><a class="markdownIt-Anchor" href="#21-读写锁"></a> 2.1 读写锁</h3>
 <ol>
 <li>通常来说，处理并发读/写的系统会实现一个有两种锁类型组成的锁系统，分别为共享锁和排他锁，或者是读锁和写锁。</li>
@@ -146,13 +146,44 @@
 </li>
 <li>死锁。一旦发生死锁，不回滚其中的一个事务就无法打破死锁，在InnoDB中，会将持有最少行级排他锁的事务回滚。</li>
 <li>事务日志：事务日志有助于提高事务的效率，存储引擎只需要更改内存中的数据副本，然后将更改的记录写入事务日志中，再有某一个后台进程在某个时间根据事务日志去更新表。因为事务日志存放在硬盘中一块连续的存储空间上，并且采用的是追加写的操作，所以写入事务日志比直接修改磁盘中的表要快得多。</li>
-<li>隐式锁定和显示锁定：隐式锁定即MySql自行随事务获取和释放锁，而显示锁定可以通过Sql语句来实现：select … for share（MySql8.0新增，用于取代select … lock in share mode） 或者 select … for update。</li>
+<li>隐式锁定和显示锁定：隐式锁定即MySQL自行随事务获取和释放锁，而显示锁定可以通过Sql语句来实现：select … for share（MySQL8.0新增，用于取代select … lock in share mode） 或者 select … for update。</li>
 </ol>
-<h2 id="4-多版本并发控制"><a class="markdownIt-Anchor" href="#4-多版本并发控制"></a> 4 多版本并发控制</h2>
+<h2 id="4-多版本并发控制mvcc"><a class="markdownIt-Anchor" href="#4-多版本并发控制mvcc"></a> 4 多版本并发控制(MVCC)</h2>
+<ol>
+<li>
+<p>5.7 InnoDB的MVCC</p>
+<ol>
+<li>
+<p>是通过每行记录后面的两个隐藏列完成的，一个保存了行的创建版本号，一个保存了行的过期版本号（删除版本号），每开始一个新的事务，系统版本号都会自动递增，事务开始时刻的系统版本号会作为事务的版本号，用来和查询到的版本号进行比较。</p>
+</li>
+<li>
+<p>Select：</p>
+<ol>
+<li>InnoDB只会查找版本号早于或等于当前事务版本号的数据行，这样可以保证该数据要么是事务开始之前就已经存在，或者是由当前事务修改或添加的。</li>
+<li>行的删除版本号要么不存在，要么大于当前版本号，保证数据在事务开始之前是没有被删除的。</li>
+</ol>
+<p>只有满足这两个条件，InnoDB才会将其作为查询结果返回。</p>
+</li>
+<li>
+<p>Insert</p>
+<p>InnoDB为新插入的行保存当前系统版本号作为行版本号</p>
+</li>
+<li>
+<p>Delete</p>
+<p>InnoDB为删除的每一行保存当前系统版本号作为行的删除标识</p>
+</li>
+<li>
+<p>Update</p>
+<p>InnoDB插入一行新纪录，保存当前系统版本号作为行版本号，同时保存当前系统版本号到原来的行作为行删除标识。</p>
+</li>
+</ol>
+</li>
+<li>
+<p>8.0 InnoDB的MVCC</p>
 <ol>
 <li></li>
 </ol>
-<p><img src="/1.MySql%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230406163634712.png" alt="跨多个事务处理同一行数据的多个版本"></p>
+<p><img src="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230406163634712.png" alt="跨多个事务处理同一行数据的多个版本"></p>
 <ol start="2">
 <li>
 <p>首先，每个事务将会在首次读取任意数据时被分配一个事务ID，当在事务中修改数据时，会向Undo日志中写入一条如何恢复该更改的Undo记录，并且该事务的回滚指针将会指向该条Undo日志记录，如果有多个对话读取聚簇主键索引记录（实际上就是InnoDB中的一张表中的数据）时，InnoDB会将该数据的事务ID和会话的读取视图（读取记录实际上就是事务开始之前的快照，记录在此事务开始前已经提交的事务ID以及版本号等信息）进行比较，如果当前状态下的数据不应被该事务可见的话（此数据的事务还未提交），那么该事务会使用Undo日志中的记录并跟踪这条记录（这样这个事务就对该数据不可见），直到会话达到一个符合可见条件的事务ID上。</p>
@@ -161,19 +192,24 @@
 <p>所有的Undo日志写入也会写入到Redo日志中，因为Undo日志的写入也是服务器崩溃后恢复过程的一部分（因为需要Undo日志来做MVCC），且Undo日志是事务性的（Redo日志中记录了每个事务对数据库的修改操作，用以服务器崩溃后的数据恢复）。</p>
 </li>
 <li>
+<p>需要注意，Undo日志也是MySQL8.0新增的特性</p>
+</li>
+</ol>
+</li>
+<li>
 <p>需要注意，MVCC和REPEATABLE READ以及READ COMMITED两个隔离级别兼容，并不适用于SERIALIZABLE和READ UNCOMMITTED两个隔离级别。</p>
 </li>
 </ol>
 <h2 id="5-复制"><a class="markdownIt-Anchor" href="#5-复制"></a> 5 复制</h2>
-<p>MySql被设计为在任意时间点上集群中只有一个节点上接受写操作，如果需要写入多台服务器中，就需要使用MySql原生的支持方式：复制。所谓复制，就是MySql源节点为每一个副本节点提供一个线程，该线程用作复制客户端登陆，当源节点写入发生时，该线程被唤醒，向副本节点发送数据。</p>
-<p><img src="/1.MySql%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230407180427115.png" alt="复制的简单图示"></p>
+<p>MySQL被设计为在任意时间点上集群中只有一个节点上接受写操作，如果需要写入多台服务器中，就需要使用MySQL原生的支持方式：复制。所谓复制，就是MySQL源节点为每一个副本节点提供一个线程，该线程用作复制客户端登陆，当源节点写入发生时，该线程被唤醒，向副本节点发送数据。</p>
+<p><img src="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230407180427115.png" alt="复制的简单图示"></p>
 <h2 id="6-数据文件结构"><a class="markdownIt-Anchor" href="#6-数据文件结构"></a> 6 数据文件结构</h2>
 <p>在8.0版本中，MySQL将表的元数据重新设计为一种数据字典，包含在表的.ibd文件中。这使得表结构上的信息支持事务和原子级数据定义更改。在操作期间，我们不再仅仅依赖information_schema来检索表定义和元数据，而是引入了字典对象缓存，这是一种基于最近最少使用（LRU）的内存缓存，包括分区定义、表定义、存储程序定义、字符集和排序信息。服务器访问表的元数据的方式的这一重大变化减少了I/O，非常高效。特别是当前访问最活跃的那些表，在缓存中最常出现。每个表的.ibd和.frm文件被替换为已经被序列化的字典信息 （.sdi）。</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://seadeemo.github.io/1.MySql%E7%9A%84%E6%9E%B6%E6%9E%84/" data-id="clggb2zs70007yk95c7kmboa8" class="article-share-link">Share</a>
+      <a data-url="https://seadeemo.github.io/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/" data-id="clgkmkynp0004yg9521t9djmm" class="article-share-link">Share</a>
       
       
     </footer>
@@ -182,19 +218,19 @@
     
 <nav id="article-nav">
   
-    <a href="/2.%E4%BC%98%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AE%BE%E7%BD%AE/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/03.schema%E7%9A%84%E8%AE%BE%E8%AE%A1/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          2.优化服务器设置
+          3.schema的设计
         
       </div>
     </a>
   
   
-    <a href="/1.%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2.%E4%BC%98%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AE%BE%E7%BD%AE/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">1.自动内存管理</div>
+      <div class="article-nav-title">2.优化服务器设置</div>
     </a>
   
 </nav>
@@ -238,15 +274,19 @@
       <ul>
         
           <li>
+            <a href="/2.%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%89%A7%E8%A1%8C%E5%AD%90%E7%B3%BB%E7%BB%9F/">2.虚拟机执行子系统</a>
+          </li>
+        
+          <li>
             <a href="/03.schema%E7%9A%84%E8%AE%BE%E8%AE%A1/">3.schema的设计</a>
           </li>
         
           <li>
-            <a href="/2.%E4%BC%98%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AE%BE%E7%BD%AE/">2.优化服务器设置</a>
+            <a href="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/">1.MySQL的架构</a>
           </li>
         
           <li>
-            <a href="/1.MySql%E7%9A%84%E6%9E%B6%E6%9E%84/">1.MySql的架构</a>
+            <a href="/2.%E4%BC%98%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AE%BE%E7%BD%AE/">2.优化服务器设置</a>
           </li>
         
           <li>

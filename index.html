@@ -67,7 +67,7 @@
     <article id="post-03.schema的设计" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/03.schema%E7%9A%84%E8%AE%BE%E8%AE%A1/" class="article-date">
-  <time datetime="2023-04-14T08:39:12.000Z" itemprop="datePublished">2023-04-14</time>
+  <time datetime="2023-04-16T16:00:00.000Z" itemprop="datePublished">2023-04-17</time>
 </a>
     
   <div class="article-category">
@@ -90,18 +90,20 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h3 id="1-数据类型"><a class="markdownIt-Anchor" href="#1-数据类型"></a> 1 数据类型</h3>
-<h4 id="11-整数类型"><a class="markdownIt-Anchor" href="#11-整数类型"></a> 1.1 整数类型</h4>
+        <h1 id="schema的设计"><a class="markdownIt-Anchor" href="#schema的设计"></a> SCHEMA的设计</h1>
+<h2 id="1-数据类型"><a class="markdownIt-Anchor" href="#1-数据类型"></a> 1 数据类型</h2>
+<h3 id="11-整数类型"><a class="markdownIt-Anchor" href="#11-整数类型"></a> 1.1 整数类型</h3>
 <p>分别有TINYINT、SMALLINT、MEDIUMINT、INT、BIGINT，分别使用8、16、24、32、64位的存储空间，存储值的范围是</p>
 <p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>−</mo><msup><mn>2</mn><mrow><mo stretchy="false">(</mo><mi>N</mi><mo>−</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></msup><mi mathvariant="normal">到</mi><msup><mn>2</mn><mrow><mo stretchy="false">(</mo><mi>N</mi><mo>−</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></msup><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">-2^{(N-1)} 到 2^{(N-1)}-1
 </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0213299999999998em;vertical-align:-0.08333em;"></span><span class="mord">−</span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.938em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mopen mtight">(</span><span class="mord mathdefault mtight" style="margin-right:0.10903em;">N</span><span class="mbin mtight">−</span><span class="mord mtight">1</span><span class="mclose mtight">)</span></span></span></span></span></span></span></span></span><span class="mord cjk_fallback">到</span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.938em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mopen mtight">(</span><span class="mord mathdefault mtight" style="margin-right:0.10903em;">N</span><span class="mbin mtight">−</span><span class="mord mtight">1</span><span class="mclose mtight">)</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">1</span></span></span></span></span></p>
 <p>对于类型的选择，这些只会影响MySql对于这些数据在磁盘和内存中的保存方式，整数的计算通常都会使用BIGINT来计算（一些聚合函数除外）。</p>
 <p>整数类型有可选的UNSIGNED属性，表示不允许为负数。同时，MySql的整数类型也可以指定宽度，但是通常来说没有意义，这并不会限制值的合法范围，只是规定了交互工具上显示字符的个数，存储、计算的消耗是没有变化的。</p>
-<h4 id="12-实数类型"><a class="markdownIt-Anchor" href="#12-实数类型"></a> 1.2 实数类型</h4>
+<h3 id="12-实数类型"><a class="markdownIt-Anchor" href="#12-实数类型"></a> 1.2 实数类型</h3>
 <p>分别有浮点类型的FLOAT、DOUBLE以及可以精确计算的定点类型的DECIMAL，FLOAT和DOUBLE类型分别占用4字节和8字节的空间，同时对于浮点类型的计算，MySql会使用DOUBLE类型。</p>
 <p>DECIMAL可以通过一个或两个参数来指定精度及范围，如DECIMAL(p,s)指总位数为p位，小数位为s位，默认情况下p为10，s为0、DECIMAL§指总位数为p位，小数位为0 。</p>
+<p>对于Decimal，MySQL会将数字打包保存进一个二进制字符串中(每4个字节村9个数字)，比如Decimal(18,9)就需要使用9个字节，小数点左边的9个数字占4字节，右边的9个数字占4字节，小数点占一字节。</p>
 <p>由于额外的空间成本和计算成本问题，应该尽量只在需要精确计算小数的场景下使用DECIMAL，例如财务管理系统；但是如果数据量很大，可以考虑使用BIGINT来代替：将需要存储的数据乘以一定的系数从而变成一个最小整数存入MySql中。</p>
-<h4 id="13-字符串类型"><a class="markdownIt-Anchor" href="#13-字符串类型"></a> 1.3 字符串类型</h4>
+<h3 id="13-字符串类型"><a class="markdownIt-Anchor" href="#13-字符串类型"></a> 1.3 字符串类型</h3>
 <ol>
 <li>
 <p>VARCHAR、CHAR</p>
@@ -109,21 +111,296 @@
 <ol>
 <li>
 <p>VARCHAR是长度可变的字符串，所以需要额外的1或2字节用以存储字符串的长度：如果列的最大长度&lt;=255字节，则需要一个字节存储字符串长度；否则使用两个字节。假设使用latin1字符集，一个VARCHAR(10)的列需要11字节的存储空间，而VARCHAR(1000)的列需要1002字节的存储空间。</p>
-<p>由于VARCHAR的长度可变，故更新时有可能会变化，这会导致额外的工作。如果行的增长使得原来位置无法容纳更多的内容，不同处理引擎会采取不同的操作来处理。</p>
+<p>由于VARCHAR的长度可变，故更新时有可能会变化，这会导致额外的工作。如果行的增长使得原来位置无法容纳更多的内容，不同处理引擎会采取不同的操作来处理，InnoDB会分裂页使行可以放进页内。</p>
 <p>以下场景适合使用VARCHAR：字符串列的最大长度远大于平均长度；列的更新比较少；使用了UTF-8这样的字符集，每个字符使用不同的字节数来存储。</p>
 </li>
 <li>
-<p>CHAR是固定长度的字符串，适合存储非常短的字符串，或者值的长度基本相同的字符串。</p>
+<p>CHAR是固定长度的字符串，适合存储非常短的字符串，或者值的长度基本相同的字符串。在存储CHAR值时，MySQL会删除所有的末尾空格，而在比较时MySQL又会根据需要填充空格。</p>
+</li>
+<li>
+<p>如果需要一列存储true\false，可以使用CHAR(0)来存储，该列可以允许null和空字符串。</p>
+</li>
+</ol>
+</li>
+<li>
+<p>BLOB和TEXT</p>
+<ol>
+<li>BLOB和TEXT都是为了存储很大数据而设计的字符串数据类型，分别采用二进制和字符方式存储。</li>
+<li>TEXT类型有TINYTEXT、SMALLTEXT、TEXT、MEDIUMTEXT、LONGTEXT，BLOB有TINYBLOB、SMALLBLOB、BLOB、MEDIUMBLOB、LONGBLOB。</li>
+<li>MySQL会将TEXT和BLOB当作独立的对象处理，存储引擎在存储时通常会做特殊处理。当BLOB和TEXT的值太大时，InnoDB会使用专门的“外部”存储区域来进行存储，此时每个值需要1~4个字节的空间存储一个指针，在外部区域存储实际的值。</li>
+<li>MySQL不能将BLOB和TEXT数据类型的完整字符串放入索引，也不能使用索引进行排序。</li>
+</ol>
+</li>
+<li>
+<p>枚举(ENUM)</p>
+<ol>
+<li>
+<p>枚举列可以把一些不重复的字符存成一个预定义的集合，MySQL在存储枚举时非常紧凑，会根据列表值的数量压缩到一个或两个字节中。</p>
+</li>
+<li>
+<p>使用如下建表语句</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> enum_test(</span><br><span class="line">	e enum(<span class="string">&#x27;fish&#x27;</span>,<span class="string">&#x27;apple&#x27;</span>,<span class="string">&#x27;dog&#x27;</span>) <span class="keyword">not</span> <span class="keyword">null</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p>添加数据</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> enum_test(e) <span class="keyword">values</span>(<span class="string">&#x27;fish&#x27;</span>,<span class="string">&#x27;dog&#x27;</span>,<span class="string">&#x27;apple&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>实际上这三行数据存储的时整数，而不是字符串，例如以下SQL的执行结果为1，3，2</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> e<span class="operator">+</span><span class="number">0</span> <span class="keyword">from</span> enum_test;</span><br></pre></td></tr></table></figure>
+<p>但是这里可以看到，枚举的值是在表定义时候传入的，也就是说，想要修改enum的值也必须修改表的定义，并且只能新增，不能删除枚举值。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 这条语句是可以执行的，最终枚举值会新增一个cat</span></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> enum_test </span><br><span class="line">modify <span class="keyword">column</span> e enum(<span class="string">&#x27;fish&#x27;</span>,<span class="string">&#x27;apple&#x27;</span>,<span class="string">&#x27;dog&#x27;</span>,<span class="string">&#x27;cat&#x27;</span>) <span class="keyword">not</span> <span class="keyword">null</span> defalut <span class="string">&#x27;a&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 这条语句是不能执行的，MySQL会报错</span></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> enum_test </span><br><span class="line">modify <span class="keyword">column</span> e enum(<span class="string">&#x27;fish&#x27;</span>,<span class="string">&#x27;apple&#x27;</span>) <span class="keyword">not</span> <span class="keyword">null</span> defalut <span class="string">&#x27;a&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p>需要注意，即使给枚举列设定了默认值，当新增时传入的值不在枚举值范围内时，会报错。</p>
+</li>
+<li>
+<p>对于枚举来说，由于存储时是将每个枚举值存储为整数，所以查找时需要将整数转换为字符串后才可以。对于存储时的开销，枚举更小；对于枚举和枚举的关联查询，比varchar和varchar的关联查询更快，但是枚举和varchar的关联查询则更慢。</p>
 </li>
 </ol>
 </li>
 </ol>
-<link href="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/KaTeX/0.10.2/katex.min.css" rel="stylesheet">
+<h3 id="14-日期和时间类型"><a class="markdownIt-Anchor" href="#14-日期和时间类型"></a> 1.4 日期和时间类型</h3>
+<ol>
+<li>
+<p>DATETIME</p>
+<p>可以保存大范围的值，从1001年到9999年，精度为秒。它将日期封装进格式为YYYYMMDDHHMMSS的整数当中，与时区无关，使用8字节的存储空间。</p>
+</li>
+<li>
+<p>TIMESTAMP</p>
+<p>保存了从1970年1月1日物业以来的秒数，只使用4字节的存储空间，只能表示从1970年到2038年。TIMESTAMP显示的值依赖于时区，而DATETIME保留文本表示的日期和时间。</p>
+<p>TIMESTAMP默认为NOT NULL。</p>
+</li>
+<li>
+<p>通常情况下应该尽量使用TIMESTAMP，因为比DATETIME的空间效率更高，如果需要存储更小粒度的时间或者更大范围的时间怎么办？可以使用BIGINT存储微妙级别的时间戳，也可以使用DOUBLE存储秒之后的小数部位。</p>
+</li>
+<li>
+<p>关于时区的问题，目前主流的处理方式是将日期时间存储为时间戳，并以协调世界时(UTC)的形式，避免MySQL处理的复杂性。</p>
+</li>
+</ol>
+<h3 id="15-位数据类型"><a class="markdownIt-Anchor" href="#15-位数据类型"></a> 1.5 位数据类型</h3>
+<ol>
+<li>
+<p>BIT</p>
+<p>BIT(1)定义一个包含1个位的字段，BIT(2)定义包含2个位的字段，BIT列的最大长度为64位。也就是说，定义一个BIT(4)的字段，可以在这一列中存储4个true\false的值。</p>
+<p>然而MySQL会把BIT当作字符串类型，而不是数字类型，这是很奇怪的。例如存储一个b ‘00111001’的值（二进制值位57）到BIT(8)的列内并检索他，得到的结果是’9’（ASCII码为57的字符），但是如果检索b+0得到的就是57（因为是数字上下文）。</p>
+<p>如果需要列保存单个true\false的值，可以使用CHAR(0)；如果需要保存多个true\false的值，可以使用SET，</p>
+</li>
+</ol>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://seadeemo.github.io/03.schema%E7%9A%84%E8%AE%BE%E8%AE%A1/" data-id="clggb2zs20001yk951msgewzv" class="article-share-link">Share</a>
+      <a data-url="https://seadeemo.github.io/03.schema%E7%9A%84%E8%AE%BE%E8%AE%A1/" data-id="clgkmkynl0001yg95hevr5u7k" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-2.虚拟机执行子系统" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2.%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%89%A7%E8%A1%8C%E5%AD%90%E7%B3%BB%E7%BB%9F/" class="article-date">
+  <time datetime="2023-04-17T02:49:00.000Z" itemprop="datePublished">2023-04-17</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JVM/">JVM</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2.%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%89%A7%E8%A1%8C%E5%AD%90%E7%B3%BB%E7%BB%9F/">2.虚拟机执行子系统</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="虚拟机执行子系统"><a class="markdownIt-Anchor" href="#虚拟机执行子系统"></a> 虚拟机执行子系统</h1>
+<h2 id="1-类文件结构"><a class="markdownIt-Anchor" href="#1-类文件结构"></a> 1 类文件结构</h2>
+<h3 id="11-class文件格式"><a class="markdownIt-Anchor" href="#11-class文件格式"></a> 1.1 Class文件格式</h3>
+<ol>
+<li>
+<p>任何一个Class文件对应的是一个唯一的类或者接口的定义信息，但是类或者接口并不一定非要定义在文件中（可以通过动态生成直接送入类加载器中），所谓的Class文件格式只是任何一个类或者接口应当满足的格式。</p>
+</li>
+<li>
+<p>Class文件是一组以8个字节为基础单位的二进制流，各个数据项目严格按照顺序排列在文件之中，中间没有分隔符，所以其中存储的内容几乎全部是程序运行的必要数据。如果由占用8字节以上的数据项时，会按照高位在前（Big-Endian，高位字节存储在在地址最低位，而低位字节在地址最高位）的方式分割成若干个8字节进行存储。</p>
+</li>
+<li>
+<p>Class文件格式采用一种类似C语言中结构体的伪结构来存储数据，该伪结构中只有两种数据类型：无符号数、表。</p>
+<ol>
+<li>
+<p>无符号数：基本的数据类型，以u1、u2、u4、u8来分别表示1、2、4、8个字节的无符号数，无符号数可以用来描述数字、索引引用、数量值或者UTF-8编码的字符串值。</p>
+</li>
+<li>
+<p>表：是由多个无符号数或其他表作为数据项构成的复合数据类型，为便于区分，所有表命名都习惯以_info结尾。整个Class文件本质上也可以看作一张表。</p>
+<p><img src="/2.%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%89%A7%E8%A1%8C%E5%AD%90%E7%B3%BB%E7%BB%9F/image-20230417104559331.png" alt="Class文件格式"></p>
+</li>
+</ol>
+</li>
+<li>
+<p>无论是无符号数还是表，当需要描述同一类型但数量不定的多个数据时，经常会使用一个前置的容量计数器加若干个连续的数据项的形式，这时候称这一系列连续的某一类型的数据为某一类型的“集合”。</p>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://seadeemo.github.io/2.%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%89%A7%E8%A1%8C%E5%AD%90%E7%B3%BB%E7%BB%9F/" data-id="clgkmkynn0002yg95e09hdd9d" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-1.MySQL的架构" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/" class="article-date">
+  <time datetime="2023-04-16T16:00:00.000Z" itemprop="datePublished">2023-04-17</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/MySQL/">MySQL</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/">1.MySQL的架构</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="1-mysql的逻辑架构"><a class="markdownIt-Anchor" href="#1-mysql的逻辑架构"></a> 1 MySQL的逻辑架构</h2>
+<p><img src="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230406153830107.png" alt="MySQL的逻辑架构"></p>
+<ol>
+<li>第一层包括连接处理、身份验证、确保安全性等。</li>
+<li>大多数MySQL的核心功能都在这一层，包括查询解析、分析、优化、以及所有的内置函数（例如，日期、时间、数学和加密函数），所有跨存储引擎的功能也都在这一层实现：存储过程、触发器、视图等。</li>
+<li>第三层是存储引擎层。存储引擎负责MySQL中数据的存储和提取。服务器通过存储引擎API进行通信。这些API屏蔽了不同存储引擎之间的差异，使得它们对上面的查询层基本上是透明的。存储引擎层还包含几十个底层函数，用于执行诸如“开始一个事务”或者“根据主键提取一行记录”等操作。但存储引擎不会去解析SQL，不同存储引擎之间也不会相互通信，而只是简单地响应服务器的请求。</li>
+</ol>
+<h3 id="11-连接的管理和安全性"><a class="markdownIt-Anchor" href="#11-连接的管理和安全性"></a> 1.1 连接的管理和安全性</h3>
+<ol>
+<li>默认情况下，每个客户端连接都会在服务器进程中拥有一个线程，该连接的查询只会在这个单独的线程中执行，该线程驻留在一个内核或者CPU上。服务器维护了一个缓存区，用于存放已就绪的线程，因此不需要为每个新的连接创建或者销毁线程。</li>
+<li>当客户端（应用）连接到MySQL服务器时，服务器需要对其进行身份验证。身份验证基于用户名、发起的主机名和密码。客户端连接成功后，服务器会继续验证该客户端是否具有其发出的每个查询的权限.</li>
+</ol>
+<h3 id="12-优化与执行"><a class="markdownIt-Anchor" href="#12-优化与执行"></a> 1.2 优化与执行</h3>
+<ol>
+<li>MySQL解析查询后会创建解析树，并对齐进行各种优化，如重写查询、决定表的读取顺序、选择合适的索引等。</li>
+<li>优化器并不关心使用的是什么存储引擎，但是因为存储引擎堆查询优化的结果有一定影响，所以优化器会询问存储引擎的一些功能或操作的成本，以及表数据的统计信息，从而更好的优化。</li>
+<li>旧版本中MySQL有内部查询缓存可以直接返回查询结果，但是从5.7.20开始，查询缓存被标注为弃用的特性，在8.0中完全移除。</li>
+</ol>
+<h2 id="2-并发控制"><a class="markdownIt-Anchor" href="#2-并发控制"></a> 2 并发控制</h2>
+<p>从服务器级别和存储引擎级别，简要的讨论下MySQL的并发控制。</p>
+<h3 id="21-读写锁"><a class="markdownIt-Anchor" href="#21-读写锁"></a> 2.1 读写锁</h3>
+<ol>
+<li>通常来说，处理并发读/写的系统会实现一个有两种锁类型组成的锁系统，分别为共享锁和排他锁，或者是读锁和写锁。</li>
+<li>读锁与读锁之间相互不阻塞，而写锁会阻塞写锁和读锁。</li>
+</ol>
+<h3 id="22-锁的粒度"><a class="markdownIt-Anchor" href="#22-锁的粒度"></a> 2.2 锁的粒度</h3>
+<ol>
+<li>表锁：写操作时锁住整张表，阻塞所有其他的读写操作。开销最小。</li>
+<li>行锁：写操作时锁住当前行，不会阻塞其他行的读写操作。最大程度支持并发操作，但是锁开销也很大。行锁的实现是由存储引擎完成的，服务器通常都不知道存储引擎中锁的实现方式。</li>
+</ol>
+<h2 id="3-事务"><a class="markdownIt-Anchor" href="#3-事务"></a> 3 事务</h2>
+<ol>
+<li>ACID（Atomicity,Consistency,Isolation,Durability）
+<ol>
+<li>Atomicity（原子性）：一个事务中的操作要么全部成功，要么全部失败。</li>
+<li>Consistency（一致性）：数据库总是从一个一致性状态切换到下一个一致性状态，也就是说一个事务中所作的任何修改，如果没有最终提交，是不会保存在数据库中的，数据库的变化是以事务为单位的。</li>
+<li>Isolation（隔离性）：一个事务所作的修改在最终提交前对其他事务是不可见的。</li>
+<li>Durability（持久性）：一旦提交，事务所作的修改就被永久的保存至数据库中。</li>
+</ol>
+</li>
+<li>隔离级别
+<ol>
+<li>READ UNCOMMITED（读未提交）：在事务中可以查看其他事务未提交的数据。</li>
+<li>READ COMMITTED（读已提交）：一个事务可以看到其他事务在它开始之后提交的修改，但是仍然会有不可重复读的问题，即一个事务对于同一行数据查看两次可能会有不同的结果（其他事务修改并提交了）。</li>
+<li>REPEATABLE READ（可重复读）：保证了在同一个事务中多次读取相同行数据的结果是一样的，但是仍然会有幻读问题，即事务在多次读取范围内的数据时，另一个事务在该范围内插入了一条新数据并提交，那么此事务会读出幻行。InnoDB和XtraDB存储引擎通过多版本并发控制（MVCC）解决了幻读问题。</li>
+<li>SERIALIZABLE（串行化）：即所有事务按序执行。</li>
+</ol>
+</li>
+<li>死锁。一旦发生死锁，不回滚其中的一个事务就无法打破死锁，在InnoDB中，会将持有最少行级排他锁的事务回滚。</li>
+<li>事务日志：事务日志有助于提高事务的效率，存储引擎只需要更改内存中的数据副本，然后将更改的记录写入事务日志中，再有某一个后台进程在某个时间根据事务日志去更新表。因为事务日志存放在硬盘中一块连续的存储空间上，并且采用的是追加写的操作，所以写入事务日志比直接修改磁盘中的表要快得多。</li>
+<li>隐式锁定和显示锁定：隐式锁定即MySQL自行随事务获取和释放锁，而显示锁定可以通过Sql语句来实现：select … for share（MySQL8.0新增，用于取代select … lock in share mode） 或者 select … for update。</li>
+</ol>
+<h2 id="4-多版本并发控制mvcc"><a class="markdownIt-Anchor" href="#4-多版本并发控制mvcc"></a> 4 多版本并发控制(MVCC)</h2>
+<ol>
+<li>
+<p>5.7 InnoDB的MVCC</p>
+<ol>
+<li>
+<p>是通过每行记录后面的两个隐藏列完成的，一个保存了行的创建版本号，一个保存了行的过期版本号（删除版本号），每开始一个新的事务，系统版本号都会自动递增，事务开始时刻的系统版本号会作为事务的版本号，用来和查询到的版本号进行比较。</p>
+</li>
+<li>
+<p>Select：</p>
+<ol>
+<li>InnoDB只会查找版本号早于或等于当前事务版本号的数据行，这样可以保证该数据要么是事务开始之前就已经存在，或者是由当前事务修改或添加的。</li>
+<li>行的删除版本号要么不存在，要么大于当前版本号，保证数据在事务开始之前是没有被删除的。</li>
+</ol>
+<p>只有满足这两个条件，InnoDB才会将其作为查询结果返回。</p>
+</li>
+<li>
+<p>Insert</p>
+<p>InnoDB为新插入的行保存当前系统版本号作为行版本号</p>
+</li>
+<li>
+<p>Delete</p>
+<p>InnoDB为删除的每一行保存当前系统版本号作为行的删除标识</p>
+</li>
+<li>
+<p>Update</p>
+<p>InnoDB插入一行新纪录，保存当前系统版本号作为行版本号，同时保存当前系统版本号到原来的行作为行删除标识。</p>
+</li>
+</ol>
+</li>
+<li>
+<p>8.0 InnoDB的MVCC</p>
+<ol>
+<li></li>
+</ol>
+<p><img src="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230406163634712.png" alt="跨多个事务处理同一行数据的多个版本"></p>
+<ol start="2">
+<li>
+<p>首先，每个事务将会在首次读取任意数据时被分配一个事务ID，当在事务中修改数据时，会向Undo日志中写入一条如何恢复该更改的Undo记录，并且该事务的回滚指针将会指向该条Undo日志记录，如果有多个对话读取聚簇主键索引记录（实际上就是InnoDB中的一张表中的数据）时，InnoDB会将该数据的事务ID和会话的读取视图（读取记录实际上就是事务开始之前的快照，记录在此事务开始前已经提交的事务ID以及版本号等信息）进行比较，如果当前状态下的数据不应被该事务可见的话（此数据的事务还未提交），那么该事务会使用Undo日志中的记录并跟踪这条记录（这样这个事务就对该数据不可见），直到会话达到一个符合可见条件的事务ID上。</p>
+</li>
+<li>
+<p>所有的Undo日志写入也会写入到Redo日志中，因为Undo日志的写入也是服务器崩溃后恢复过程的一部分（因为需要Undo日志来做MVCC），且Undo日志是事务性的（Redo日志中记录了每个事务对数据库的修改操作，用以服务器崩溃后的数据恢复）。</p>
+</li>
+<li>
+<p>需要注意，Undo日志也是MySQL8.0新增的特性</p>
+</li>
+</ol>
+</li>
+<li>
+<p>需要注意，MVCC和REPEATABLE READ以及READ COMMITED两个隔离级别兼容，并不适用于SERIALIZABLE和READ UNCOMMITTED两个隔离级别。</p>
+</li>
+</ol>
+<h2 id="5-复制"><a class="markdownIt-Anchor" href="#5-复制"></a> 5 复制</h2>
+<p>MySQL被设计为在任意时间点上集群中只有一个节点上接受写操作，如果需要写入多台服务器中，就需要使用MySQL原生的支持方式：复制。所谓复制，就是MySQL源节点为每一个副本节点提供一个线程，该线程用作复制客户端登陆，当源节点写入发生时，该线程被唤醒，向副本节点发送数据。</p>
+<p><img src="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230407180427115.png" alt="复制的简单图示"></p>
+<h2 id="6-数据文件结构"><a class="markdownIt-Anchor" href="#6-数据文件结构"></a> 6 数据文件结构</h2>
+<p>在8.0版本中，MySQL将表的元数据重新设计为一种数据字典，包含在表的.ibd文件中。这使得表结构上的信息支持事务和原子级数据定义更改。在操作期间，我们不再仅仅依赖information_schema来检索表定义和元数据，而是引入了字典对象缓存，这是一种基于最近最少使用（LRU）的内存缓存，包括分区定义、表定义、存储程序定义、字符集和排序信息。服务器访问表的元数据的方式的这一重大变化减少了I/O，非常高效。特别是当前访问最活跃的那些表，在缓存中最常出现。每个表的.ibd和.frm文件被替换为已经被序列化的字典信息 （.sdi）。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://seadeemo.github.io/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/" data-id="clgkmkynp0004yg9521t9djmm" class="article-share-link">Share</a>
       
       
     </footer>
@@ -163,120 +440,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://seadeemo.github.io/2.%E4%BC%98%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AE%BE%E7%BD%AE/" data-id="clggb2zs30002yk951i2u8gkr" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-1.MySql的架构" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/1.MySql%E7%9A%84%E6%9E%B6%E6%9E%84/" class="article-date">
-  <time datetime="2023-04-14T08:08:44.510Z" itemprop="datePublished">2023-04-14</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/MySQL/">MySQL</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/1.MySql%E7%9A%84%E6%9E%B6%E6%9E%84/">1.MySql的架构</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="1-mysql的逻辑架构"><a class="markdownIt-Anchor" href="#1-mysql的逻辑架构"></a> 1 MySql的逻辑架构</h2>
-<p><img src="/1.MySql%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230406153830107.png" alt="MySql的逻辑架构"></p>
-<ol>
-<li>第一层包括连接处理、身份验证、确保安全性等。</li>
-<li>大多数MySQL的核心功能都在这一层，包括查询解析、分析、优化、以及所有的内置函数（例如，日期、时间、数学和加密函数），所有跨存储引擎的功能也都在这一层实现：存储过程、触发器、视图等。</li>
-<li>第三层是存储引擎层。存储引擎负责MySQL中数据的存储和提取。服务器通过存储引擎API进行通信。这些API屏蔽了不同存储引擎之间的差异，使得它们对上面的查询层基本上是透明的。存储引擎层还包含几十个底层函数，用于执行诸如“开始一个事务”或者“根据主键提取一行记录”等操作。但存储引擎不会去解析SQL，不同存储引擎之间也不会相互通信，而只是简单地响应服务器的请求。</li>
-</ol>
-<h3 id="11-连接的管理和安全性"><a class="markdownIt-Anchor" href="#11-连接的管理和安全性"></a> 1.1 连接的管理和安全性</h3>
-<ol>
-<li>默认情况下，每个客户端连接都会在服务器进程中拥有一个线程，该连接的查询只会在这个单独的线程中执行，该线程驻留在一个内核或者CPU上。服务器维护了一个缓存区，用于存放已就绪的线程，因此不需要为每个新的连接创建或者销毁线程。</li>
-<li>当客户端（应用）连接到MySQL服务器时，服务器需要对其进行身份验证。身份验证基于用户名、发起的主机名和密码。客户端连接成功后，服务器会继续验证该客户端是否具有其发出的每个查询的权限.</li>
-</ol>
-<h3 id="12-优化与执行"><a class="markdownIt-Anchor" href="#12-优化与执行"></a> 1.2 优化与执行</h3>
-<ol>
-<li>MySql解析查询后会创建解析树，并对齐进行各种优化，如重写查询、决定表的读取顺序、选择合适的索引等。</li>
-<li>优化器并不关心使用的是什么存储引擎，但是因为存储引擎堆查询优化的结果有一定影响，所以优化器会询问存储引擎的一些功能或操作的成本，以及表数据的统计信息，从而更好的优化。</li>
-<li>旧版本中MySql有内部查询缓存可以直接返回查询结果，但是从5.7.20开始，查询缓存被标注为弃用的特性，在8.0中完全移除。</li>
-</ol>
-<h2 id="2-并发控制"><a class="markdownIt-Anchor" href="#2-并发控制"></a> 2 并发控制</h2>
-<p>从服务器级别和存储引擎级别，简要的讨论下MySql的并发控制。</p>
-<h3 id="21-读写锁"><a class="markdownIt-Anchor" href="#21-读写锁"></a> 2.1 读写锁</h3>
-<ol>
-<li>通常来说，处理并发读/写的系统会实现一个有两种锁类型组成的锁系统，分别为共享锁和排他锁，或者是读锁和写锁。</li>
-<li>读锁与读锁之间相互不阻塞，而写锁会阻塞写锁和读锁。</li>
-</ol>
-<h3 id="22-锁的粒度"><a class="markdownIt-Anchor" href="#22-锁的粒度"></a> 2.2 锁的粒度</h3>
-<ol>
-<li>表锁：写操作时锁住整张表，阻塞所有其他的读写操作。开销最小。</li>
-<li>行锁：写操作时锁住当前行，不会阻塞其他行的读写操作。最大程度支持并发操作，但是锁开销也很大。行锁的实现是由存储引擎完成的，服务器通常都不知道存储引擎中锁的实现方式。</li>
-</ol>
-<h2 id="3-事务"><a class="markdownIt-Anchor" href="#3-事务"></a> 3 事务</h2>
-<ol>
-<li>ACID（Atomicity,Consistency,Isolation,Durability）
-<ol>
-<li>Atomicity（原子性）：一个事务中的操作要么全部成功，要么全部失败。</li>
-<li>Consistency（一致性）：数据库总是从一个一致性状态切换到下一个一致性状态，也就是说一个事务中所作的任何修改，如果没有最终提交，是不会保存在数据库中的，数据库的变化是以事务为单位的。</li>
-<li>Isolation（隔离性）：一个事务所作的修改在最终提交前对其他事务是不可见的。</li>
-<li>Durability（持久性）：一旦提交，事务所作的修改就被永久的保存至数据库中。</li>
-</ol>
-</li>
-<li>隔离级别
-<ol>
-<li>READ UNCOMMITED（读未提交）：在事务中可以查看其他事务未提交的数据。</li>
-<li>READ COMMITTED（读已提交）：一个事务可以看到其他事务在它开始之后提交的修改，但是仍然会有不可重复读的问题，即一个事务对于同一行数据查看两次可能会有不同的结果（其他事务修改并提交了）。</li>
-<li>REPEATABLE READ（可重复读）：保证了在同一个事务中多次读取相同行数据的结果是一样的，但是仍然会有幻读问题，即事务在多次读取范围内的数据时，另一个事务在该范围内插入了一条新数据并提交，那么此事务会读出幻行。InnoDB和XtraDB存储引擎通过多版本并发控制（MVCC）解决了幻读问题。</li>
-<li>SERIALIZABLE（串行化）：即所有事务按序执行。</li>
-</ol>
-</li>
-<li>死锁。一旦发生死锁，不回滚其中的一个事务就无法打破死锁，在InnoDB中，会将持有最少行级排他锁的事务回滚。</li>
-<li>事务日志：事务日志有助于提高事务的效率，存储引擎只需要更改内存中的数据副本，然后将更改的记录写入事务日志中，再有某一个后台进程在某个时间根据事务日志去更新表。因为事务日志存放在硬盘中一块连续的存储空间上，并且采用的是追加写的操作，所以写入事务日志比直接修改磁盘中的表要快得多。</li>
-<li>隐式锁定和显示锁定：隐式锁定即MySql自行随事务获取和释放锁，而显示锁定可以通过Sql语句来实现：select … for share（MySql8.0新增，用于取代select … lock in share mode） 或者 select … for update。</li>
-</ol>
-<h2 id="4-多版本并发控制"><a class="markdownIt-Anchor" href="#4-多版本并发控制"></a> 4 多版本并发控制</h2>
-<ol>
-<li></li>
-</ol>
-<p><img src="/1.MySql%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230406163634712.png" alt="跨多个事务处理同一行数据的多个版本"></p>
-<ol start="2">
-<li>
-<p>首先，每个事务将会在首次读取任意数据时被分配一个事务ID，当在事务中修改数据时，会向Undo日志中写入一条如何恢复该更改的Undo记录，并且该事务的回滚指针将会指向该条Undo日志记录，如果有多个对话读取聚簇主键索引记录（实际上就是InnoDB中的一张表中的数据）时，InnoDB会将该数据的事务ID和会话的读取视图（读取记录实际上就是事务开始之前的快照，记录在此事务开始前已经提交的事务ID以及版本号等信息）进行比较，如果当前状态下的数据不应被该事务可见的话（此数据的事务还未提交），那么该事务会使用Undo日志中的记录并跟踪这条记录（这样这个事务就对该数据不可见），直到会话达到一个符合可见条件的事务ID上。</p>
-</li>
-<li>
-<p>所有的Undo日志写入也会写入到Redo日志中，因为Undo日志的写入也是服务器崩溃后恢复过程的一部分（因为需要Undo日志来做MVCC），且Undo日志是事务性的（Redo日志中记录了每个事务对数据库的修改操作，用以服务器崩溃后的数据恢复）。</p>
-</li>
-<li>
-<p>需要注意，MVCC和REPEATABLE READ以及READ COMMITED两个隔离级别兼容，并不适用于SERIALIZABLE和READ UNCOMMITTED两个隔离级别。</p>
-</li>
-</ol>
-<h2 id="5-复制"><a class="markdownIt-Anchor" href="#5-复制"></a> 5 复制</h2>
-<p>MySql被设计为在任意时间点上集群中只有一个节点上接受写操作，如果需要写入多台服务器中，就需要使用MySql原生的支持方式：复制。所谓复制，就是MySql源节点为每一个副本节点提供一个线程，该线程用作复制客户端登陆，当源节点写入发生时，该线程被唤醒，向副本节点发送数据。</p>
-<p><img src="/1.MySql%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230407180427115.png" alt="复制的简单图示"></p>
-<h2 id="6-数据文件结构"><a class="markdownIt-Anchor" href="#6-数据文件结构"></a> 6 数据文件结构</h2>
-<p>在8.0版本中，MySQL将表的元数据重新设计为一种数据字典，包含在表的.ibd文件中。这使得表结构上的信息支持事务和原子级数据定义更改。在操作期间，我们不再仅仅依赖information_schema来检索表定义和元数据，而是引入了字典对象缓存，这是一种基于最近最少使用（LRU）的内存缓存，包括分区定义、表定义、存储程序定义、字符集和排序信息。服务器访问表的元数据的方式的这一重大变化减少了I/O，非常高效。特别是当前访问最活跃的那些表，在缓存中最常出现。每个表的.ibd和.frm文件被替换为已经被序列化的字典信息 （.sdi）。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://seadeemo.github.io/1.MySql%E7%9A%84%E6%9E%B6%E6%9E%84/" data-id="clggb2zs70007yk95c7kmboa8" class="article-share-link">Share</a>
+      <a data-url="https://seadeemo.github.io/2.%E4%BC%98%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AE%BE%E7%BD%AE/" data-id="clgkmkynq0005yg953w1e9fih" class="article-share-link">Share</a>
       
       
     </footer>
@@ -380,6 +544,10 @@
 <ol>
 <li>比如NIO中DirectByteBuffer对象可以直接对直接内存的引用进行操作。</li>
 <li>当需要动态扩展时超出了本机总内存的大小时，抛出OutOfMemoryError。</li>
+</ol>
+<h3 id="17-执行引擎"><a class="markdownIt-Anchor" href="#17-执行引擎"></a> 1.7 执行引擎</h3>
+<ol>
+<li>分为解释器和即时编译器两个部分，解释器将字节码文件逐行解释为机器码，由于每一次执行都需要解释对应字节码为机器码，效率较低；而即时编译器是将字节码文件一次性编译为机器码文件，效率较高。当方法被多次调用时，JVM会使用即时编译器编译该字节码，从而提高执行效率。</li>
 </ol>
 <h2 id="2-hotspot虚拟机中的对象"><a class="markdownIt-Anchor" href="#2-hotspot虚拟机中的对象"></a> 2 HotSpot虚拟机中的对象</h2>
 <h3 id="21-普通对象的创建不包括数组和class对象"><a class="markdownIt-Anchor" href="#21-普通对象的创建不包括数组和class对象"></a> 2.1 普通对象的创建（不包括数组和Class对象）</h3>
@@ -642,7 +810,7 @@
 <h4 id="331-serial收集器新生代"><a class="markdownIt-Anchor" href="#331-serial收集器新生代"></a> 3.3.1 Serial收集器（新生代）</h4>
 <ol>
 <li>
-<p>单线程工作的垃圾收集器（在垃圾收集时，必须暂停其他的工作线程）。</p>
+<p>采用标记复制算法、单线程工作的垃圾收集器（在垃圾收集时，必须暂停其他的工作线程）。</p>
 <p><img src="/1.%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/image-20230410105447830.png" alt="Serial/Serial Old垃圾收集器运行示意图"></p>
 </li>
 <li>
@@ -723,21 +891,51 @@
 <li></li>
 </ol>
 <p><img src="/1.%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/image-20230411135009040.png" alt="G1收集器Region分区示意图"></p>
-<ol start="5">
+</li>
 <li>
 <p>G1的一些问题</p>
 <ol>
-<li>如何解决跨Region引用问题？可以使用记忆集来避免全堆的扫描。但是在G1中，每个Region都需要维护自己的记忆集，这个记忆集本质上是一种哈希表，Key是其他Region的起始地址，Value是一个卡表索引号的集合。</li>
-</ol>
+<li>
+<p>如何解决跨Region引用问题？可以使用记忆集来避免全堆的扫描。但是在G1中，每个Region都需要维护自己的记忆集，这种记忆集在CardTable基础上增加了哈希表，Key是其他Region的起始地址，Value是一个卡表索引号的集合，也就是说每个Region的记忆集元素数量都有Region总数-1个，key代表其他的Region，value代表该Region中的哪些卡页指向了自己Region中的对象；同时，如果该CardTable中对应元素的卡页指向了其他Region的对象，那么对应元素的值为1（变脏了）。这种记忆集比之前的记忆集都复杂，并且Region的数量明显大于分代数量，所以内存占用比较大。通常来说，G1至少需要Java堆容量10%-20%的额外内存来维持工作</p>
+<p><img src="/1.%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/%E6%9C%AA%E5%91%BD%E5%90%8D%E6%96%87%E4%BB%B6.png" alt="G1中的记忆集中HashTable的结构"></p>
+</li>
+<li>
+<p>如何解决并发标记过程中用户线程并发执行导致错误的问题？G1使用的是原始快照的方式。那么如何解决垃圾回收过程中新对象的创建问题呢？G1为每个Region设计了两个TAMS(Top at Mark Start)的指针，分别为previous TAMS和next TAMS，分别代表上一轮并发标记中隐式存活的top指针和这一轮存活的top指针。</p>
+<p>bottom---------previous TAMS----------next TAMS----------top</p>
+<p>previous TAMS—next TAMS之间的对象就是上一次隐式标记存活的对象，next TAMS—top之间的对象就是此次并发标记隐式标记存活的对象。</p>
+<p>同时，G1也有CMS的毛病：如果内存回收的速度赶不上内存分配的速度，那么G1也会冻结用户线程执行FULL GC导致长时间的STT。</p>
+</li>
+<li>
+<p>G1如何建立起可靠的停顿预测模型呢？G1的停顿预测模型是以衰减均值为理论基础实现的，所谓的衰减均值就是更容易受到新数据印象的平均值。G1会记录每个Region的回收耗时、每个Region记忆集的脏卡数量等每一个可以测量的步骤花费的成本，并分析得出平均值、标准偏差、置信度等统计信息，通过这些信息来预测由哪些Region组成回收集才不会超过期望停顿时间。</p>
 </li>
 </ol>
+</li>
+<li>
+<p>G1的运行过程：</p>
+<ol>
+<li>
+<p>初始标记：标记GC Roots，修改TAMS指针，让下一阶段用户线程并发时，可以正确的在可用Region中分配对象。借用进行Minor GC的时候同步完成？</p>
+</li>
+<li>
+<p>并发标记：开始进行可达性分析，并且在对象图扫描完成后，处理原始快照（SATB）记录的在并发时引用变动的对象。</p>
+</li>
+<li>
+<p>最终标记：短暂的STT，处理SATB记录。</p>
+</li>
+<li>
+<p>筛选回收：更新Region的统计数据，对各个Region的回收价值和成本进行排序，根据用户期望停顿时间选择任意多个Region组成回收集，将回收集Region中的存活对象复制到空的Region中，将旧Region直接回收。因为这一部分需要移动对象，必须STT，由多条垃圾回收线程并行完成。</p>
+</li>
+<li></li>
+</ol>
+<pre><code>  ![G1收集器运行示意图](./1.自动内存管理/image-20230417101430386.png)
+</code></pre>
 </li>
 </ol>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://seadeemo.github.io/1.%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" data-id="clggb2zs90009yk9589gebgg0" class="article-share-link">Share</a>
+      <a data-url="https://seadeemo.github.io/1.%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" data-id="clgkmkynt000cyg9527fd3qon" class="article-share-link">Share</a>
       
       
     </footer>
@@ -785,15 +983,19 @@
       <ul>
         
           <li>
+            <a href="/2.%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%89%A7%E8%A1%8C%E5%AD%90%E7%B3%BB%E7%BB%9F/">2.虚拟机执行子系统</a>
+          </li>
+        
+          <li>
             <a href="/03.schema%E7%9A%84%E8%AE%BE%E8%AE%A1/">3.schema的设计</a>
           </li>
         
           <li>
-            <a href="/2.%E4%BC%98%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AE%BE%E7%BD%AE/">2.优化服务器设置</a>
+            <a href="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/">1.MySQL的架构</a>
           </li>
         
           <li>
-            <a href="/1.MySql%E7%9A%84%E6%9E%B6%E6%9E%84/">1.MySql的架构</a>
+            <a href="/2.%E4%BC%98%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AE%BE%E7%BD%AE/">2.优化服务器设置</a>
           </li>
         
           <li>

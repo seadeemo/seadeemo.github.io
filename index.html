@@ -64,195 +64,6 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-1.MySQL的架构" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/" class="article-date">
-  <time datetime="2023-04-16T16:00:00.000Z" itemprop="datePublished">2023-04-17</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/MySQL/">MySQL</a>►<a class="article-category-link" href="/categories/MySQL/%E3%80%8A%E9%AB%98%E6%80%A7%E8%83%BDMySQL%E3%80%8B%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">《高性能MySQL》读书笔记</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/">1.MySQL的架构</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="1-mysql的逻辑架构"><a class="markdownIt-Anchor" href="#1-mysql的逻辑架构"></a> 1 MySQL的逻辑架构</h2>
-<p><img src="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230406153830107.png" alt="MySQL的逻辑架构"></p>
-<ol>
-<li>第一层包括连接处理、身份验证、确保安全性等。</li>
-<li>大多数MySQL的核心功能都在这一层，包括查询解析、分析、优化、以及所有的内置函数（例如，日期、时间、数学和加密函数），所有跨存储引擎的功能也都在这一层实现：存储过程、触发器、视图等。</li>
-<li>第三层是存储引擎层。存储引擎负责MySQL中数据的存储和提取。服务器通过存储引擎API进行通信。这些API屏蔽了不同存储引擎之间的差异，使得它们对上面的查询层基本上是透明的。存储引擎层还包含几十个底层函数，用于执行诸如“开始一个事务”或者“根据主键提取一行记录”等操作。但存储引擎不会去解析SQL，不同存储引擎之间也不会相互通信，而只是简单地响应服务器的请求。</li>
-</ol>
-<h3 id="11-连接的管理和安全性"><a class="markdownIt-Anchor" href="#11-连接的管理和安全性"></a> 1.1 连接的管理和安全性</h3>
-<ol>
-<li>默认情况下，每个客户端连接都会在服务器进程中拥有一个线程，该连接的查询只会在这个单独的线程中执行，该线程驻留在一个内核或者CPU上。服务器维护了一个缓存区，用于存放已就绪的线程，因此不需要为每个新的连接创建或者销毁线程。</li>
-<li>当客户端（应用）连接到MySQL服务器时，服务器需要对其进行身份验证。身份验证基于用户名、发起的主机名和密码。客户端连接成功后，服务器会继续验证该客户端是否具有其发出的每个查询的权限.</li>
-</ol>
-<h3 id="12-优化与执行"><a class="markdownIt-Anchor" href="#12-优化与执行"></a> 1.2 优化与执行</h3>
-<ol>
-<li>MySQL解析查询后会创建解析树，并对齐进行各种优化，如重写查询、决定表的读取顺序、选择合适的索引等。</li>
-<li>优化器并不关心使用的是什么存储引擎，但是因为存储引擎堆查询优化的结果有一定影响，所以优化器会询问存储引擎的一些功能或操作的成本，以及表数据的统计信息，从而更好的优化。</li>
-<li>旧版本中MySQL有内部查询缓存可以直接返回查询结果，但是从5.7.20开始，查询缓存被标注为弃用的特性，在8.0中完全移除。</li>
-</ol>
-<h2 id="2-并发控制"><a class="markdownIt-Anchor" href="#2-并发控制"></a> 2 并发控制</h2>
-<p>从服务器级别和存储引擎级别，简要的讨论下MySQL的并发控制。</p>
-<h3 id="21-读写锁"><a class="markdownIt-Anchor" href="#21-读写锁"></a> 2.1 读写锁</h3>
-<ol>
-<li>通常来说，处理并发读/写的系统会实现一个有两种锁类型组成的锁系统，分别为共享锁和排他锁，或者是读锁和写锁。</li>
-<li>读锁与读锁之间相互不阻塞，而写锁会阻塞写锁和读锁。</li>
-</ol>
-<h3 id="22-锁的粒度"><a class="markdownIt-Anchor" href="#22-锁的粒度"></a> 2.2 锁的粒度</h3>
-<ol>
-<li>表锁：写操作时锁住整张表，阻塞所有其他的读写操作。开销最小。</li>
-<li>行锁：写操作时锁住当前行，不会阻塞其他行的读写操作。最大程度支持并发操作，但是锁开销也很大。行锁的实现是由存储引擎完成的，服务器通常都不知道存储引擎中锁的实现方式。</li>
-</ol>
-<h2 id="3-事务"><a class="markdownIt-Anchor" href="#3-事务"></a> 3 事务</h2>
-<ol>
-<li>ACID（Atomicity,Consistency,Isolation,Durability）
-<ol>
-<li>Atomicity（原子性）：一个事务中的操作要么全部成功，要么全部失败。</li>
-<li>Consistency（一致性）：数据库总是从一个一致性状态切换到下一个一致性状态，也就是说一个事务中所作的任何修改，如果没有最终提交，是不会保存在数据库中的，数据库的变化是以事务为单位的。</li>
-<li>Isolation（隔离性）：一个事务所作的修改在最终提交前对其他事务是不可见的。</li>
-<li>Durability（持久性）：一旦提交，事务所作的修改就被永久的保存至数据库中。</li>
-</ol>
-</li>
-<li>隔离级别
-<ol>
-<li>READ UNCOMMITED（读未提交）：在事务中可以查看其他事务未提交的数据。</li>
-<li>READ COMMITTED（读已提交）：一个事务可以看到其他事务在它开始之后提交的修改，但是仍然会有不可重复读的问题，即一个事务对于同一行数据查看两次可能会有不同的结果（其他事务修改并提交了）。</li>
-<li>REPEATABLE READ（可重复读）：保证了在同一个事务中多次读取相同行数据的结果是一样的，但是仍然会有幻读问题，即事务在多次读取范围内的数据时，另一个事务在该范围内插入了一条新数据并提交，那么此事务会读出幻行。InnoDB和XtraDB存储引擎通过多版本并发控制（MVCC）解决了幻读问题。</li>
-<li>SERIALIZABLE（串行化）：即所有事务按序执行。</li>
-</ol>
-</li>
-<li>死锁。一旦发生死锁，不回滚其中的一个事务就无法打破死锁，在InnoDB中，会将持有最少行级排他锁的事务回滚。</li>
-<li>事务日志：事务日志有助于提高事务的效率，存储引擎只需要更改内存中的数据副本，然后将更改的记录写入事务日志中，再有某一个后台进程在某个时间根据事务日志去更新表。因为事务日志存放在硬盘中一块连续的存储空间上，并且采用的是追加写的操作，所以写入事务日志比直接修改磁盘中的表要快得多。</li>
-<li>隐式锁定和显示锁定：隐式锁定即MySQL自行随事务获取和释放锁，而显示锁定可以通过Sql语句来实现：select … for share（MySQL8.0新增，用于取代select … lock in share mode） 或者 select … for update。</li>
-</ol>
-<h2 id="4-多版本并发控制mvcc"><a class="markdownIt-Anchor" href="#4-多版本并发控制mvcc"></a> 4 多版本并发控制(MVCC)</h2>
-<ol>
-<li>
-<p>5.7 InnoDB的MVCC</p>
-<ol>
-<li>
-<p>是通过每行记录后面的两个隐藏列完成的，一个保存了行的创建版本号，一个保存了行的过期版本号（删除版本号），每开始一个新的事务，系统版本号都会自动递增，事务开始时刻的系统版本号会作为事务的版本号，用来和查询到的版本号进行比较。</p>
-</li>
-<li>
-<p>Select：</p>
-<ol>
-<li>InnoDB只会查找版本号早于或等于当前事务版本号的数据行，这样可以保证该数据要么是事务开始之前就已经存在，或者是由当前事务修改或添加的。</li>
-<li>行的删除版本号要么不存在，要么大于当前版本号，保证数据在事务开始之前是没有被删除的。</li>
-</ol>
-<p>只有满足这两个条件，InnoDB才会将其作为查询结果返回。</p>
-</li>
-<li>
-<p>Insert</p>
-<p>InnoDB为新插入的行保存当前系统版本号作为行版本号</p>
-</li>
-<li>
-<p>Delete</p>
-<p>InnoDB为删除的每一行保存当前系统版本号作为行的删除标识</p>
-</li>
-<li>
-<p>Update</p>
-<p>InnoDB插入一行新纪录，保存当前系统版本号作为行版本号，同时保存当前系统版本号到原来的行作为行删除标识。</p>
-</li>
-</ol>
-</li>
-<li>
-<p>8.0 InnoDB的MVCC</p>
-<ol>
-<li></li>
-</ol>
-<p><img src="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230406163634712.png" alt="跨多个事务处理同一行数据的多个版本"></p>
-<ol start="2">
-<li>
-<p>首先，每个事务将会在首次读取任意数据时被分配一个事务ID，当在事务中修改数据时，会向Undo日志中写入一条如何恢复该更改的Undo记录，并且该事务的回滚指针将会指向该条Undo日志记录，如果有多个对话读取聚簇主键索引记录（实际上就是InnoDB中的一张表中的数据）时，InnoDB会将该数据的事务ID和会话的读取视图（读取记录实际上就是事务开始之前的快照，记录在此事务开始前已经提交的事务ID以及版本号等信息）进行比较，如果当前状态下的数据不应被该事务可见的话（此数据的事务还未提交），那么该事务会使用Undo日志中的记录并跟踪这条记录（这样这个事务就对该数据不可见），直到会话达到一个符合可见条件的事务ID上。</p>
-</li>
-<li>
-<p>所有的Undo日志写入也会写入到Redo日志中，因为Undo日志的写入也是服务器崩溃后恢复过程的一部分（因为需要Undo日志来做MVCC），且Undo日志是事务性的（Redo日志中记录了每个事务对数据库的修改操作，用以服务器崩溃后的数据恢复）。</p>
-</li>
-<li>
-<p>需要注意，Undo日志也是MySQL8.0新增的特性</p>
-</li>
-</ol>
-</li>
-<li>
-<p>需要注意，MVCC和REPEATABLE READ以及READ COMMITED两个隔离级别兼容，并不适用于SERIALIZABLE和READ UNCOMMITTED两个隔离级别。</p>
-</li>
-</ol>
-<h2 id="5-复制"><a class="markdownIt-Anchor" href="#5-复制"></a> 5 复制</h2>
-<p>MySQL被设计为在任意时间点上集群中只有一个节点上接受写操作，如果需要写入多台服务器中，就需要使用MySQL原生的支持方式：复制。所谓复制，就是MySQL源节点为每一个副本节点提供一个线程，该线程用作复制客户端登陆，当源节点写入发生时，该线程被唤醒，向副本节点发送数据。</p>
-<p><img src="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230407180427115.png" alt="复制的简单图示"></p>
-<h2 id="6-数据文件结构"><a class="markdownIt-Anchor" href="#6-数据文件结构"></a> 6 数据文件结构</h2>
-<p>在8.0版本中，MySQL将表的元数据重新设计为一种数据字典，包含在表的.ibd文件中。这使得表结构上的信息支持事务和原子级数据定义更改。在操作期间，我们不再仅仅依赖information_schema来检索表定义和元数据，而是引入了字典对象缓存，这是一种基于最近最少使用（LRU）的内存缓存，包括分区定义、表定义、存储程序定义、字符集和排序信息。服务器访问表的元数据的方式的这一重大变化减少了I/O，非常高效。特别是当前访问最活跃的那些表，在缓存中最常出现。每个表的.ibd和.frm文件被替换为已经被序列化的字典信息 （.sdi）。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://seadeemo.github.io/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/" data-id="clgm25rhg0001cg95a9x6bxkc" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-2.优化服务器设置" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2.%E4%BC%98%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AE%BE%E7%BD%AE/" class="article-date">
-  <time datetime="2023-04-14T08:08:44.511Z" itemprop="datePublished">2023-04-14</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/MySQL/">MySQL</a>►<a class="article-category-link" href="/categories/MySQL/%E3%80%8A%E9%AB%98%E6%80%A7%E8%83%BDMySQL%E3%80%8B%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">《高性能MySQL》读书笔记</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2.%E4%BC%98%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AE%BE%E7%BD%AE/">2.优化服务器设置</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://seadeemo.github.io/2.%E4%BC%98%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AE%BE%E7%BD%AE/" data-id="clgm25rhh0002cg95efgfblxp" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
     <article id="post-03.schema的设计" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/03.schema%E7%9A%84%E8%AE%BE%E8%AE%A1/" class="article-date">
@@ -414,7 +225,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://seadeemo.github.io/03.schema%E7%9A%84%E8%AE%BE%E8%AE%A1/" data-id="clgm25rhj0004cg95cgcydfag" class="article-share-link">Share</a>
+      <a data-url="https://seadeemo.github.io/03.schema%E7%9A%84%E8%AE%BE%E8%AE%A1/" data-id="clgnim6cx00006k95gxss2wjw" class="article-share-link">Share</a>
       
       
     </footer>
@@ -424,10 +235,10 @@
 
 
   
-    <article id="post-4.索引" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-1.MySQL的架构" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/4.%E7%B4%A2%E5%BC%95/" class="article-date">
-  <time datetime="2023-04-17T16:00:00.000Z" itemprop="datePublished">2023-04-18</time>
+    <a href="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/" class="article-date">
+  <time datetime="2023-04-16T16:00:00.000Z" itemprop="datePublished">2023-04-17</time>
 </a>
     
   <div class="article-category">
@@ -442,7 +253,156 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/4.%E7%B4%A2%E5%BC%95/">4.创建高性能的索引</a>
+      <a class="article-title" href="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/">1.MySQL的架构</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="1-mysql的逻辑架构"><a class="markdownIt-Anchor" href="#1-mysql的逻辑架构"></a> 1 MySQL的逻辑架构</h2>
+<p><img src="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230406153830107.png" alt="MySQL的逻辑架构"></p>
+<ol>
+<li>第一层包括连接处理、身份验证、确保安全性等。</li>
+<li>大多数MySQL的核心功能都在这一层，包括查询解析、分析、优化、以及所有的内置函数（例如，日期、时间、数学和加密函数），所有跨存储引擎的功能也都在这一层实现：存储过程、触发器、视图等。</li>
+<li>第三层是存储引擎层。存储引擎负责MySQL中数据的存储和提取。服务器通过存储引擎API进行通信。这些API屏蔽了不同存储引擎之间的差异，使得它们对上面的查询层基本上是透明的。存储引擎层还包含几十个底层函数，用于执行诸如“开始一个事务”或者“根据主键提取一行记录”等操作。但存储引擎不会去解析SQL，不同存储引擎之间也不会相互通信，而只是简单地响应服务器的请求。</li>
+</ol>
+<h3 id="11-连接的管理和安全性"><a class="markdownIt-Anchor" href="#11-连接的管理和安全性"></a> 1.1 连接的管理和安全性</h3>
+<ol>
+<li>默认情况下，每个客户端连接都会在服务器进程中拥有一个线程，该连接的查询只会在这个单独的线程中执行，该线程驻留在一个内核或者CPU上。服务器维护了一个缓存区，用于存放已就绪的线程，因此不需要为每个新的连接创建或者销毁线程。</li>
+<li>当客户端（应用）连接到MySQL服务器时，服务器需要对其进行身份验证。身份验证基于用户名、发起的主机名和密码。客户端连接成功后，服务器会继续验证该客户端是否具有其发出的每个查询的权限.</li>
+</ol>
+<h3 id="12-优化与执行"><a class="markdownIt-Anchor" href="#12-优化与执行"></a> 1.2 优化与执行</h3>
+<ol>
+<li>MySQL解析查询后会创建解析树，并对齐进行各种优化，如重写查询、决定表的读取顺序、选择合适的索引等。</li>
+<li>优化器并不关心使用的是什么存储引擎，但是因为存储引擎堆查询优化的结果有一定影响，所以优化器会询问存储引擎的一些功能或操作的成本，以及表数据的统计信息，从而更好的优化。</li>
+<li>旧版本中MySQL有内部查询缓存可以直接返回查询结果，但是从5.7.20开始，查询缓存被标注为弃用的特性，在8.0中完全移除。</li>
+</ol>
+<h2 id="2-并发控制"><a class="markdownIt-Anchor" href="#2-并发控制"></a> 2 并发控制</h2>
+<p>从服务器级别和存储引擎级别，简要的讨论下MySQL的并发控制。</p>
+<h3 id="21-读写锁"><a class="markdownIt-Anchor" href="#21-读写锁"></a> 2.1 读写锁</h3>
+<ol>
+<li>通常来说，处理并发读/写的系统会实现一个有两种锁类型组成的锁系统，分别为共享锁和排他锁，或者是读锁和写锁。</li>
+<li>读锁与读锁之间相互不阻塞，而写锁会阻塞写锁和读锁。</li>
+</ol>
+<h3 id="22-锁的粒度"><a class="markdownIt-Anchor" href="#22-锁的粒度"></a> 2.2 锁的粒度</h3>
+<ol>
+<li>表锁：写操作时锁住整张表，阻塞所有其他的读写操作。开销最小。</li>
+<li>行锁：写操作时锁住当前行，不会阻塞其他行的读写操作。最大程度支持并发操作，但是锁开销也很大。行锁的实现是由存储引擎完成的，服务器通常都不知道存储引擎中锁的实现方式。</li>
+</ol>
+<h2 id="3-事务"><a class="markdownIt-Anchor" href="#3-事务"></a> 3 事务</h2>
+<ol>
+<li>ACID（Atomicity,Consistency,Isolation,Durability）
+<ol>
+<li>Atomicity（原子性）：一个事务中的操作要么全部成功，要么全部失败。</li>
+<li>Consistency（一致性）：数据库总是从一个一致性状态切换到下一个一致性状态，也就是说一个事务中所作的任何修改，如果没有最终提交，是不会保存在数据库中的，数据库的变化是以事务为单位的。</li>
+<li>Isolation（隔离性）：一个事务所作的修改在最终提交前对其他事务是不可见的。</li>
+<li>Durability（持久性）：一旦提交，事务所作的修改就被永久的保存至数据库中。</li>
+</ol>
+</li>
+<li>隔离级别
+<ol>
+<li>READ UNCOMMITED（读未提交）：在事务中可以查看其他事务未提交的数据。</li>
+<li>READ COMMITTED（读已提交）：一个事务可以看到其他事务在它开始之后提交的修改，但是仍然会有不可重复读的问题，即一个事务对于同一行数据查看两次可能会有不同的结果（其他事务修改并提交了）。</li>
+<li>REPEATABLE READ（可重复读）：保证了在同一个事务中多次读取相同行数据的结果是一样的，但是仍然会有幻读问题，即事务在多次读取范围内的数据时，另一个事务在该范围内插入了一条新数据并提交，那么此事务会读出幻行。InnoDB和XtraDB存储引擎通过多版本并发控制（MVCC）解决了幻读问题。</li>
+<li>SERIALIZABLE（串行化）：即所有事务按序执行。</li>
+</ol>
+</li>
+<li>死锁。一旦发生死锁，不回滚其中的一个事务就无法打破死锁，在InnoDB中，会将持有最少行级排他锁的事务回滚。</li>
+<li>事务日志：事务日志有助于提高事务的效率，存储引擎只需要更改内存中的数据副本，然后将更改的记录写入事务日志中，再有某一个后台进程在某个时间根据事务日志去更新表。因为事务日志存放在硬盘中一块连续的存储空间上，并且采用的是追加写的操作，所以写入事务日志比直接修改磁盘中的表要快得多。</li>
+<li>隐式锁定和显示锁定：隐式锁定即MySQL自行随事务获取和释放锁，而显示锁定可以通过Sql语句来实现：select … for share（MySQL8.0新增，用于取代select … lock in share mode） 或者 select … for update。</li>
+</ol>
+<h2 id="4-多版本并发控制mvcc"><a class="markdownIt-Anchor" href="#4-多版本并发控制mvcc"></a> 4 多版本并发控制(MVCC)</h2>
+<ol>
+<li>
+<p>5.7 InnoDB的MVCC</p>
+<ol>
+<li>
+<p>是通过每行记录后面的两个隐藏列完成的，一个保存了行的创建版本号，一个保存了行的过期版本号（删除版本号），每开始一个新的事务，系统版本号都会自动递增，事务开始时刻的系统版本号会作为事务的版本号，用来和查询到的版本号进行比较。</p>
+</li>
+<li>
+<p>Select：</p>
+<ol>
+<li>InnoDB只会查找版本号早于或等于当前事务版本号的数据行，这样可以保证该数据要么是事务开始之前就已经存在，或者是由当前事务修改或添加的。</li>
+<li>行的删除版本号要么不存在，要么大于当前版本号，保证数据在事务开始之前是没有被删除的。</li>
+</ol>
+<p>只有满足这两个条件，InnoDB才会将其作为查询结果返回。</p>
+</li>
+<li>
+<p>Insert</p>
+<p>InnoDB为新插入的行保存当前系统版本号作为行版本号</p>
+</li>
+<li>
+<p>Delete</p>
+<p>InnoDB为删除的每一行保存当前系统版本号作为行的删除标识</p>
+</li>
+<li>
+<p>Update</p>
+<p>InnoDB插入一行新纪录，保存当前系统版本号作为行版本号，同时保存当前系统版本号到原来的行作为行删除标识。</p>
+</li>
+</ol>
+</li>
+<li>
+<p>8.0 InnoDB的MVCC</p>
+<ol>
+<li></li>
+</ol>
+<p><img src="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230406163634712.png" alt="跨多个事务处理同一行数据的多个版本"></p>
+<ol start="2">
+<li>
+<p>首先，每个事务将会在首次读取任意数据时被分配一个事务ID，当在事务中修改数据时，会向Undo日志中写入一条如何恢复该更改的Undo记录，并且该事务的回滚指针将会指向该条Undo日志记录，如果有多个对话读取聚簇主键索引记录（实际上就是InnoDB中的一张表中的数据）时，InnoDB会将该数据的事务ID和会话的读取视图（读取记录实际上就是事务开始之前的快照，记录在此事务开始前已经提交的事务ID以及版本号等信息）进行比较，如果当前状态下的数据不应被该事务可见的话（此数据的事务还未提交），那么该事务会使用Undo日志中的记录并跟踪这条记录（这样这个事务就对该数据不可见），直到会话达到一个符合可见条件的事务ID上。</p>
+</li>
+<li>
+<p>所有的Undo日志写入也会写入到Redo日志中，因为Undo日志的写入也是服务器崩溃后恢复过程的一部分（因为需要Undo日志来做MVCC），且Undo日志是事务性的（Redo日志中记录了每个事务对数据库的修改操作，用以服务器崩溃后的数据恢复）。</p>
+</li>
+<li>
+<p>需要注意，Undo日志也是MySQL8.0新增的特性</p>
+</li>
+</ol>
+</li>
+<li>
+<p>需要注意，MVCC和REPEATABLE READ以及READ COMMITED两个隔离级别兼容，并不适用于SERIALIZABLE和READ UNCOMMITTED两个隔离级别。</p>
+</li>
+</ol>
+<h2 id="5-复制"><a class="markdownIt-Anchor" href="#5-复制"></a> 5 复制</h2>
+<p>MySQL被设计为在任意时间点上集群中只有一个节点上接受写操作，如果需要写入多台服务器中，就需要使用MySQL原生的支持方式：复制。所谓复制，就是MySQL源节点为每一个副本节点提供一个线程，该线程用作复制客户端登陆，当源节点写入发生时，该线程被唤醒，向副本节点发送数据。</p>
+<p><img src="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/image-20230407180427115.png" alt="复制的简单图示"></p>
+<h2 id="6-数据文件结构"><a class="markdownIt-Anchor" href="#6-数据文件结构"></a> 6 数据文件结构</h2>
+<p>在8.0版本中，MySQL将表的元数据重新设计为一种数据字典，包含在表的.ibd文件中。这使得表结构上的信息支持事务和原子级数据定义更改。在操作期间，我们不再仅仅依赖information_schema来检索表定义和元数据，而是引入了字典对象缓存，这是一种基于最近最少使用（LRU）的内存缓存，包括分区定义、表定义、存储程序定义、字符集和排序信息。服务器访问表的元数据的方式的这一重大变化减少了I/O，非常高效。特别是当前访问最活跃的那些表，在缓存中最常出现。每个表的.ibd和.frm文件被替换为已经被序列化的字典信息 （.sdi）。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://seadeemo.github.io/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/" data-id="clgnim6d000026k954n00ha43" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-2.优化服务器设置" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2.%E4%BC%98%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AE%BE%E7%BD%AE/" class="article-date">
+  <time datetime="2023-04-14T08:08:44.511Z" itemprop="datePublished">2023-04-14</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/MySQL/">MySQL</a>►<a class="article-category-link" href="/categories/MySQL/%E3%80%8A%E9%AB%98%E6%80%A7%E8%83%BDMySQL%E3%80%8B%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">《高性能MySQL》读书笔记</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2.%E4%BC%98%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AE%BE%E7%BD%AE/">2.优化服务器设置</a>
     </h1>
   
 
@@ -454,7 +414,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://seadeemo.github.io/4.%E7%B4%A2%E5%BC%95/" data-id="clgm25rhk0005cg95e2cq7kb6" class="article-share-link">Share</a>
+      <a data-url="https://seadeemo.github.io/2.%E4%BC%98%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AE%BE%E7%BD%AE/" data-id="clgnim6d400046k9542s59a0r" class="article-share-link">Share</a>
       
       
     </footer>
@@ -563,7 +523,112 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://seadeemo.github.io/2.%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%89%A7%E8%A1%8C%E5%AD%90%E7%B3%BB%E7%BB%9F/" data-id="clgm25rhk0006cg95a8xubgmv" class="article-share-link">Share</a>
+      <a data-url="https://seadeemo.github.io/2.%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%89%A7%E8%A1%8C%E5%AD%90%E7%B3%BB%E7%BB%9F/" data-id="clgnim6d600056k95h8c9c43q" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-4.索引" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/4.%E7%B4%A2%E5%BC%95/" class="article-date">
+  <time datetime="2023-04-17T16:00:00.000Z" itemprop="datePublished">2023-04-18</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/MySQL/">MySQL</a>►<a class="article-category-link" href="/categories/MySQL/%E3%80%8A%E9%AB%98%E6%80%A7%E8%83%BDMySQL%E3%80%8B%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">《高性能MySQL》读书笔记</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/4.%E7%B4%A2%E5%BC%95/">4.创建高性能的索引</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://seadeemo.github.io/4.%E7%B4%A2%E5%BC%95/" data-id="clgnim6d700066k95b4ui0hii" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-AQS" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/AQS/" class="article-date">
+  <time datetime="2023-04-19T09:47:00.000Z" itemprop="datePublished">2023-04-19</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Java%E5%9F%BA%E7%A1%80/">Java基础</a>►<a class="article-category-link" href="/categories/Java%E5%9F%BA%E7%A1%80/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">多线程</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/AQS/">AQS(AbstractedQueuedSynchronizer)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="1-aqs概述"><a class="markdownIt-Anchor" href="#1-aqs概述"></a> 1 AQS概述</h3>
+<p>AQS(AbstractQueuedSynchronized)的核心思想是基于CLH队列锁的。</p>
+<p>CLH队列锁即一个虚拟队列(只有结点，没有队列的实现)，包含多个结点和一个指向最后一个结点的尾指针tail。其中每个结点有两个重要属性：该结点所代表的线程的指针、该结点是否持有锁的状态变量。每当一个线程想要获取锁时，会先对tail结点进行getAndSet的原子操作，返回当前tail节点并使tail指向新入队的结点。入队后的结点会轮询上一个结点的状态，当上一个结点释放锁后会得到锁。注意，CLH并没有在每一个结点中显示的维护上一个结点的指针，仅仅是轮询还是那个个结点的状态。</p>
+<h3 id="2-从countdownlatch看aqs"><a class="markdownIt-Anchor" href="#2-从countdownlatch看aqs"></a> 2 从CountDownLatch看AQS</h3>
+<p>以下是一段简单的使用CountDownLatch让四个线程挂起，等待同时执行某个任务的代码。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, InterruptedException &#123;</span><br><span class="line">    <span class="type">CountDownLatch</span> <span class="variable">countDownLatch</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CountDownLatch</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">//使当前线程等待，直到值为0</span></span><br><span class="line">                countDownLatch.await();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">            &#125;</span><br><span class="line">            System.err.println(Thread.currentThread().getName() + <span class="string">&quot;--&quot;</span> +</span><br><span class="line">                    Thread.currentThread().getThreadGroup());</span><br><span class="line">        &#125;).start();</span><br><span class="line">    &#125;</span><br><span class="line">    Thread.sleep(<span class="number">2000</span>);</span><br><span class="line">    <span class="comment">//此时countDownLatch值-1，为0，之前的所有线程同时启动。</span></span><br><span class="line">    countDownLatch.countDown();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="21-cdl的await方法"><a class="markdownIt-Anchor" href="#21-cdl的await方法"></a> 2.1 CDL的await()方法</h4>
+<p>进入CountDownLatch的await()方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//CountDownLatch await()</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">await</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">    sync.acquireSharedInterruptibly(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实际上调用的是父类AQS的acquireSharedInterruptibly()方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//AbstractQueuedSynchronizer acquireSharedInterruptibly()</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">acquireSharedInterruptibly</span><span class="params">(<span class="type">int</span> arg)</span></span><br><span class="line">        <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">    <span class="keyword">if</span> (Thread.interrupted())</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">InterruptedException</span>();</span><br><span class="line">    <span class="keyword">if</span> (tryAcquireShared(arg) &lt; <span class="number">0</span>)</span><br><span class="line">        <span class="comment">//调用AQS的doAcquireSharedInterruptibly()方法</span></span><br><span class="line">        doAcquireSharedInterruptibly(arg);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>此时调用AQS的doAcquireSharedInterruptibly()方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//AQS doAcquireSharedInterruptibly()</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">doAcquireSharedInterruptibly</span><span class="params">(<span class="type">int</span> arg)</span></span><br><span class="line">    <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">    <span class="comment">//将 当前线程 以 共享模式 创建结点并将其 加入队列 中</span></span><br><span class="line">    <span class="comment">//(1)</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">Node</span> <span class="variable">node</span> <span class="operator">=</span> addWaiter(Node.SHARED);</span><br><span class="line">    <span class="type">boolean</span> <span class="variable">failed</span> <span class="operator">=</span> <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">            <span class="comment">//获取node的前一个结点</span></span><br><span class="line">            <span class="keyword">final</span> <span class="type">Node</span> <span class="variable">p</span> <span class="operator">=</span> node.predecessor();</span><br><span class="line">            <span class="keyword">if</span> (p == head) &#123;</span><br><span class="line">                <span class="comment">//进入CountDownLatch中内部类Sync重写的tryAcquireShared()方法中</span></span><br><span class="line">                <span class="comment">//(2)</span></span><br><span class="line">                <span class="type">int</span> <span class="variable">r</span> <span class="operator">=</span> tryAcquireShared(arg);</span><br><span class="line">                <span class="keyword">if</span> (r &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">                    <span class="comment">//CDL中count个数=0,此时等待线程应该被唤醒</span></span><br><span class="line">                    <span class="comment">//(3)</span></span><br><span class="line">                    <span class="comment">//清空node,因为node中的线程已经完成唤醒</span></span><br><span class="line">                    setHeadAndPropagate(node, r);</span><br><span class="line">                    p.next = <span class="literal">null</span>; <span class="comment">// help GC</span></span><br><span class="line">                    failed = <span class="literal">false</span>;</span><br><span class="line">                    <span class="keyword">return</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (shouldParkAfterFailedAcquire(p, node) &amp;&amp;</span><br><span class="line">                parkAndCheckInterrupt())</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">InterruptedException</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (failed)</span><br><span class="line">            cancelAcquire(node);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看看这个addWaiter()方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//(1)开始</span></span><br><span class="line"><span class="comment">//AQS addWaiter()</span></span><br><span class="line"><span class="keyword">private</span> Node <span class="title function_">addWaiter</span><span class="params">(Node mode)</span> &#123;</span><br><span class="line">    <span class="type">Node</span> <span class="variable">node</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Node</span>(Thread.currentThread(), mode);</span><br><span class="line">    <span class="comment">// Try the fast path of enq; backup to full enq on failure</span></span><br><span class="line">    <span class="comment">//尝试进行一次快速的入队操作(插入队尾),如果失败,再进行完全的入队操作</span></span><br><span class="line">    <span class="type">Node</span> <span class="variable">pred</span> <span class="operator">=</span> tail;</span><br><span class="line">    <span class="keyword">if</span> (pred != <span class="literal">null</span>) &#123;</span><br><span class="line">        node.prev = pred;</span><br><span class="line">        <span class="comment">//通过CAS来尝试修改队尾指针,使其指向刚刚创建的结点</span></span><br><span class="line">        <span class="keyword">if</span> (compareAndSetTail(pred, node)) &#123;</span><br><span class="line">            pred.next = node;</span><br><span class="line">            <span class="keyword">return</span> node;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//失败了就走一次完全的入队操作</span></span><br><span class="line">    enq(node);</span><br><span class="line">    <span class="keyword">return</span> node;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>进去enq()方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//AQS enq</span></span><br><span class="line"><span class="keyword">private</span> Node <span class="title function_">enq</span><span class="params">(<span class="keyword">final</span> Node node)</span> &#123;</span><br><span class="line">    <span class="comment">//加了循环</span></span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        <span class="type">Node</span> <span class="variable">t</span> <span class="operator">=</span> tail;</span><br><span class="line">        <span class="keyword">if</span> (t == <span class="literal">null</span>) &#123; <span class="comment">// Must initialize</span></span><br><span class="line">            <span class="comment">//证明node是第一个进入该队列的结点,需要给队列初始化,设置头部指针和尾部指针</span></span><br><span class="line">            <span class="keyword">if</span> (compareAndSetHead(<span class="keyword">new</span> <span class="title class_">Node</span>()))</span><br><span class="line">                tail = head;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">//使node的前指针指向之前的tail</span></span><br><span class="line">            node.prev = t;</span><br><span class="line">            <span class="comment">//通过CAS不断尝试使tail指向node</span></span><br><span class="line">            <span class="keyword">if</span> (compareAndSetTail(t, node)) &#123;</span><br><span class="line">                t.next = node;</span><br><span class="line">                <span class="keyword">return</span> t;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//(1)结束</span></span><br></pre></td></tr></table></figure>
+<p>进入CDL中Sync重写的tryAcquireShared()</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//(2)开始</span></span><br><span class="line"><span class="comment">//CDL.Sync tryAcquireShared</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">int</span> <span class="title function_">tryAcquireShared</span><span class="params">(<span class="type">int</span> acquires)</span> &#123;</span><br><span class="line">    <span class="comment">//实际上getState()的返回值就是CountDownLatch实例中count的值,为0时以为这调用CountDownLatch.await()的线程应当停止阻塞继续执行</span></span><br><span class="line">            <span class="keyword">return</span> (getState() == <span class="number">0</span>) ? <span class="number">1</span> : -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//(2)结束</span></span><br></pre></td></tr></table></figure>
+<p>进入AQS的setHeadAndPropagate()</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//(3)开始</span></span><br><span class="line"><span class="comment">//AQS setHeadAndPropagate</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">setHeadAndPropagate</span><span class="params">(Node node, <span class="type">int</span> propagate)</span> &#123;</span><br><span class="line">    <span class="type">Node</span> <span class="variable">h</span> <span class="operator">=</span> head; <span class="comment">// Record old head for check below</span></span><br><span class="line">    <span class="comment">//此线程需要被唤醒,那么就需要将之前head对应node中的属性置空,方便GC</span></span><br><span class="line">    setHead(node);</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    private void setHead(Node node) &#123;</span></span><br><span class="line"><span class="comment">    	head = node;</span></span><br><span class="line"><span class="comment">    	node.thread = null;</span></span><br><span class="line"><span class="comment">    	node.prev = null;</span></span><br><span class="line"><span class="comment">	&#125;</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * Try to signal next queued node if:</span></span><br><span class="line"><span class="comment">     *   Propagation was indicated by caller,</span></span><br><span class="line"><span class="comment">     *     or was recorded (as h.waitStatus either before</span></span><br><span class="line"><span class="comment">     *     or after setHead) by a previous operation</span></span><br><span class="line"><span class="comment">     *     (note: this uses sign-check of waitStatus because</span></span><br><span class="line"><span class="comment">     *      PROPAGATE status may transition to SIGNAL.)</span></span><br><span class="line"><span class="comment">     * and</span></span><br><span class="line"><span class="comment">     *   The next node is waiting in shared mode,</span></span><br><span class="line"><span class="comment">     *     or we don&#x27;t know, because it appears null</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * The conservatism in both of these checks may cause</span></span><br><span class="line"><span class="comment">     * unnecessary wake-ups, but only when there are multiple</span></span><br><span class="line"><span class="comment">     * racing acquires/releases, so most need signals now or soon</span></span><br><span class="line"><span class="comment">     * anyway.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//在之前将CDL的count作为propagate传入</span></span><br><span class="line">    <span class="comment">//如果propagate&gt;0,代表count==0</span></span><br><span class="line">    <span class="keyword">if</span> (propagate &gt; <span class="number">0</span> || h == <span class="literal">null</span> || h.waitStatus &lt; <span class="number">0</span> ||</span><br><span class="line">        (h = head) == <span class="literal">null</span> || h.waitStatus &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="type">Node</span> <span class="variable">s</span> <span class="operator">=</span> node.next;</span><br><span class="line">        <span class="comment">//CDL中是共享模式</span></span><br><span class="line">        <span class="keyword">if</span> (s == <span class="literal">null</span> || s.isShared())</span><br><span class="line">            <span class="comment">//进入该方法</span></span><br><span class="line">            doReleaseShared();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>进入AQS的doReleaseShared()</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//AQS doReleaseShared()</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">doReleaseShared</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * Ensure that a release propagates, even if there are other</span></span><br><span class="line"><span class="comment">     * in-progress acquires/releases.  This proceeds in the usual</span></span><br><span class="line"><span class="comment">     * way of trying to unparkSuccessor of head if it needs</span></span><br><span class="line"><span class="comment">     * signal. But if it does not, status is set to PROPAGATE to</span></span><br><span class="line"><span class="comment">     * ensure that upon release, propagation continues.</span></span><br><span class="line"><span class="comment">     * Additionally, we must loop in case a new node is added</span></span><br><span class="line"><span class="comment">     * while we are doing this. Also, unlike other uses of</span></span><br><span class="line"><span class="comment">     * unparkSuccessor, we need to know if CAS to reset status</span></span><br><span class="line"><span class="comment">     * fails, if so rechecking.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        <span class="type">Node</span> <span class="variable">h</span> <span class="operator">=</span> head;</span><br><span class="line">        <span class="keyword">if</span> (h != <span class="literal">null</span> &amp;&amp; h != tail) &#123;</span><br><span class="line">            <span class="comment">//如果head为null或者当前队列只有head一个结点,就不需要以下的操作了</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">ws</span> <span class="operator">=</span> h.waitStatus;</span><br><span class="line">            <span class="keyword">if</span> (ws == Node.SIGNAL) &#123;</span><br><span class="line">                <span class="keyword">if</span> (!compareAndSetWaitStatus(h, Node.SIGNAL, <span class="number">0</span>))</span><br><span class="line">                    <span class="comment">//如果CAS修改head结点的状态从-1到0不成功,证明有别的线程修改了</span></span><br><span class="line">                    <span class="keyword">continue</span>;            <span class="comment">// loop to recheck cases,重新循环</span></span><br><span class="line">                unparkSuccessor(h);</span><br><span class="line">                <span class="comment">//只有成功修改head的状态才会通知next结点</span></span><br><span class="line">                <span class="comment">//(4)</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (ws == <span class="number">0</span> &amp;&amp;</span><br><span class="line">                     !compareAndSetWaitStatus(h, <span class="number">0</span>, Node.PROPAGATE))</span><br><span class="line">                <span class="keyword">continue</span>;                <span class="comment">// loop on failed CAS</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (h == head)                   <span class="comment">// loop if head changed</span></span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//(3)结束</span></span><br></pre></td></tr></table></figure>
+<p>AQD unparkSuccessor()</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//(4)开始</span></span><br><span class="line"><span class="comment">//AQS unparkSuccessor</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">unparkSuccessor</span><span class="params">(Node node)</span> &#123;</span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * If status is negative (i.e., possibly needing signal) try</span></span><br><span class="line"><span class="comment">     * to clear in anticipation of signalling.  It is OK if this</span></span><br><span class="line"><span class="comment">     * fails or if status is changed by waiting thread.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">ws</span> <span class="operator">=</span> node.waitStatus;</span><br><span class="line">    <span class="keyword">if</span> (ws &lt; <span class="number">0</span>)</span><br><span class="line">        compareAndSetWaitStatus(node, ws, <span class="number">0</span>);</span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * Thread to unpark is held in successor, which is normally</span></span><br><span class="line"><span class="comment">     * just the next node.  But if cancelled or apparently null,</span></span><br><span class="line"><span class="comment">     * traverse backwards from tail to find the actual</span></span><br><span class="line"><span class="comment">     * non-cancelled successor.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="type">Node</span> <span class="variable">s</span> <span class="operator">=</span> node.next;</span><br><span class="line">    <span class="keyword">if</span> (s == <span class="literal">null</span> || s.waitStatus &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">//证明 该结点的 后一个节点的 后续结点 不需要被signal 或 没有下一个结点</span></span><br><span class="line">        <span class="comment">//这是不对的 因为head之前的状态为signal,证明此时head的next指针不对,需要从tail往前找到正确的需要signal的next结点</span></span><br><span class="line">        s = <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">Node</span> <span class="variable">t</span> <span class="operator">=</span> tail; t != <span class="literal">null</span> &amp;&amp; t != node; t = t.prev)</span><br><span class="line">            <span class="keyword">if</span> (t.waitStatus &lt;= <span class="number">0</span>)</span><br><span class="line">                s = t;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (s != <span class="literal">null</span>)</span><br><span class="line">        <span class="comment">//通知后续节点的线程</span></span><br><span class="line">        LockSupport.unpark(s.thread);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//(4)结束</span></span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://seadeemo.github.io/AQS/" data-id="clgnim6de000p6k95dinc3w28" class="article-share-link">Share</a>
       
       
     </footer>
@@ -629,26 +694,30 @@ InterruptedException – 如果任何线程在当前线程等待通知之前或�
 <p>通过setPriority()设置线程的优先级，分别有三个常量对应三种优先级：</p>
 <p>MIN_PRIORITY = 1;NORM_PRIORITY = 5;MAX_PRIORITY = 10;</p>
 <h3 id="6-countdownlatch"><a class="markdownIt-Anchor" href="#6-countdownlatch"></a> 6 CountDownLatch</h3>
-<p>await()方法使当前线程等待，直到countDownLatch的值为0；countDown()方法使值-1。</p>
+<p>顾名思义，倒计时锁。await()方法使当前线程等待，直到countDownLatch的值为0；countDown()方法使值-1。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Demo1</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="type">CountDownLatch</span> <span class="variable">countDownLatch</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CountDownLatch</span>(<span class="number">1</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="comment">//使当前线程等待，直到值为0</span></span><br><span class="line">                    countDownLatch.await();</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">                &#125;</span><br><span class="line">                System.err.println(Thread.currentThread().getName() + <span class="string">&quot;--&quot;</span> +</span><br><span class="line">                        Thread.currentThread().getThreadGroup());</span><br><span class="line">            &#125;).start();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (System.in.read() != <span class="number">99</span>) &#123;</span><br><span class="line">            <span class="comment">//此时countDownLatch值-1，为0，之前的所有线程同时启动。</span></span><br><span class="line">            countDownLatch.countDown();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="7-parkunpark"><a class="markdownIt-Anchor" href="#7-parkunpark"></a> 7 park()/unpark()</h3>
+<h3 id="7-cyclicbarrier"><a class="markdownIt-Anchor" href="#7-cyclicbarrier"></a> 7 CyclicBarrier</h3>
+<p>循环屏障，可循环使用的屏障。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Demo5</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">//构造时传入一个Runnable实现对象，可以在每次屏障正常撤开之前由最后一个到达屏障的线程执行。</span></span><br><span class="line">        <span class="type">CyclicBarrier</span> <span class="variable">barrier</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CyclicBarrier</span>(<span class="number">5</span>, () -&gt; &#123;</span><br><span class="line">            System.err.println(Thread.currentThread().getName() + <span class="string">&quot; 执行同步操作！&quot;</span>);</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">4</span>; i++) &#123;</span><br><span class="line">            <span class="type">Thread</span> <span class="variable">thread</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">                <span class="type">Thread</span> <span class="variable">currentThread</span> <span class="operator">=</span> Thread.currentThread();</span><br><span class="line">                <span class="type">String</span> <span class="variable">name</span> <span class="operator">=</span> currentThread.getName();</span><br><span class="line">                <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">                    System.err.println(name + <span class="string">&quot; is blocked!&quot;</span>);</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        <span class="comment">//等待</span></span><br><span class="line">                        barrier.await();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (BrokenBarrierException e) &#123;</span><br><span class="line">                        <span class="comment">//如果同屏障下的其他线程被打断或超时，或屏障被重置，或当await()调用时屏障破损，或屏障因某些异常失败</span></span><br><span class="line">                        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">                    &#125;</span><br><span class="line">                    System.err.println(name);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">            thread.start();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                Thread.sleep(<span class="number">2000</span>);</span><br><span class="line">                barrier.await();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (BrokenBarrierException e) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>除了上述代码中使用的方法，还有reset()、getNumberWaiting()、isBroken()、getParties()等，基本都见名知义。</p>
+<h3 id="8-parkunpark"><a class="markdownIt-Anchor" href="#8-parkunpark"></a> 8 park()/unpark()</h3>
 <p>park()让当前线程等待“许可”，而unpark()可以给指定线程“许可”。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Demo2</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Thread</span> <span class="variable">thread1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">             System.err.println(<span class="string">&quot;等待许可&quot;</span>);</span><br><span class="line">            <span class="comment">//使当前线程等待许可</span></span><br><span class="line">            LockSupport.park();</span><br><span class="line">            System.err.println(<span class="string">&quot;asldkjaskl&quot;</span>);</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        thread1.start();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Thread.sleep(<span class="number">2000</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">        &#125;</span><br><span class="line">        System.err.println(<span class="string">&quot;允许许可&quot;</span>);</span><br><span class="line">        LockSupport.unpark(thread1);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//运行结果</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">等待许可</span></span><br><span class="line"><span class="comment">允许许可</span></span><br><span class="line"><span class="comment">asldkjaskl</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
-<h3 id="8-管道输入输出流"><a class="markdownIt-Anchor" href="#8-管道输入输出流"></a> 8 管道输入\输出流</h3>
+<h3 id="9-管道输入输出流"><a class="markdownIt-Anchor" href="#9-管道输入输出流"></a> 9 管道输入\输出流</h3>
 <p>JDK提供了PipedWriter、PipedRead、PipedOutputStream、PipedInputStream，前两个基于字符，后两个基于字节流。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Demo4</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="comment">//定义管道的读写</span></span><br><span class="line">        <span class="type">PipedWriter</span> <span class="variable">writer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">PipedWriter</span>();</span><br><span class="line">        <span class="type">PipedReader</span> <span class="variable">reader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">PipedReader</span>(writer);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="comment">//一方写</span></span><br><span class="line">                    <span class="keyword">if</span> (System.in.read() == <span class="number">1</span>) <span class="keyword">break</span>;</span><br><span class="line">                    writer.write(<span class="number">1</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;).start();</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="type">int</span> s;</span><br><span class="line">            <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="comment">//一方读</span></span><br><span class="line">                    <span class="keyword">if</span> ((s = reader.read()) == -<span class="number">1</span>) <span class="keyword">break</span>;</span><br><span class="line">                &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">//其他的操作</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;).start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="9-一些实际问题"><a class="markdownIt-Anchor" href="#9-一些实际问题"></a> 9 一些实际问题</h3>
-<h4 id="91-如何让两个线程顺序执行"><a class="markdownIt-Anchor" href="#91-如何让两个线程顺序执行"></a> 9.1 如何让两个线程顺序执行？</h4>
+<h3 id="10-一些实际问题"><a class="markdownIt-Anchor" href="#10-一些实际问题"></a> 10 一些实际问题</h3>
+<h4 id="101-如何让两个线程顺序执行"><a class="markdownIt-Anchor" href="#101-如何让两个线程顺序执行"></a> 10.1 如何让两个线程顺序执行？</h4>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestMain</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">//创建两个线程</span></span><br><span class="line">        <span class="type">Thread</span> <span class="variable">thread1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            System.err.println(Thread.currentThread().getName() + <span class="string">&quot;--A&quot;</span>);</span><br><span class="line">            System.err.println(Thread.currentThread().getName() + <span class="string">&quot;--B&quot;</span>);</span><br><span class="line">            System.err.println(Thread.currentThread().getName() + <span class="string">&quot;--C&quot;</span>);</span><br><span class="line">        &#125;,<span class="string">&quot;thread1&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="type">Thread</span> <span class="variable">thread2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">//thread2等待thread1执行完成</span></span><br><span class="line">                thread1.join();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">            &#125;</span><br><span class="line">            System.err.println(Thread.currentThread().getName() + <span class="string">&quot;--A&quot;</span>);</span><br><span class="line">            System.err.println(Thread.currentThread().getName() + <span class="string">&quot;--B&quot;</span>);</span><br><span class="line">            System.err.println(Thread.currentThread().getName() + <span class="string">&quot;--C&quot;</span>);</span><br><span class="line">        &#125;,<span class="string">&quot;thread2&quot;</span>);</span><br><span class="line"></span><br><span class="line">        thread2.start();</span><br><span class="line">        thread1.start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>执行结果：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">thread1--A</span><br><span class="line">thread1--B</span><br><span class="line">thread1--C</span><br><span class="line">thread2--A</span><br><span class="line">thread2--B</span><br><span class="line">thread2--C</span><br></pre></td></tr></table></figure>
-<h4 id="92-如何让两个线程交替执行"><a class="markdownIt-Anchor" href="#92-如何让两个线程交替执行"></a> 9.2 如何让两个线程交替执行</h4>
+<h4 id="102-如何让两个线程交替执行"><a class="markdownIt-Anchor" href="#102-如何让两个线程交替执行"></a> 10.2 如何让两个线程交替执行</h4>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Demo3</span> &#123;</span><br><span class="line">    <span class="comment">//静态变量，或volatile</span></span><br><span class="line">    <span class="keyword">static</span> <span class="type">int</span> <span class="variable">count</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Object</span> <span class="variable">lock1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//定义余数，因为无法保证thread0和thread1哪个线程先拿到锁开始执行</span></span><br><span class="line">    <span class="keyword">static</span> <span class="type">int</span> thread0Remainder;</span><br><span class="line">    <span class="keyword">static</span> <span class="type">int</span> thread1Remainder;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">                <span class="keyword">synchronized</span> (lock1) &#123;</span><br><span class="line">                    System.err.println(Thread.currentThread().getName() + <span class="string">&quot;--&quot;</span> + count++);</span><br><span class="line">                    thread0Remainder = count % <span class="number">2</span>;</span><br><span class="line">                    lock1.notify();</span><br><span class="line">                    <span class="comment">//不能用if判断，防止虚假唤醒</span></span><br><span class="line">                    <span class="keyword">while</span> (count % <span class="number">2</span> == thread0Remainder) &#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            lock1.wait();</span><br><span class="line">                        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;).start();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">                <span class="keyword">synchronized</span> (lock1) &#123;</span><br><span class="line">                    System.err.println(Thread.currentThread().getName() + <span class="string">&quot;--&quot;</span> + count++);</span><br><span class="line">                    thread1Remainder = count % <span class="number">2</span>;</span><br><span class="line">                    lock1.notify();</span><br><span class="line">                    <span class="keyword">while</span> (count % <span class="number">2</span> == thread1Remainder) &#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            lock1.wait();</span><br><span class="line">                        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;).start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://seadeemo.github.io/%E7%BA%BF%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/" data-id="clgm25rhp000pcg95643odszo" class="article-share-link">Share</a>
+      <a data-url="https://seadeemo.github.io/%E7%BA%BF%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/" data-id="clgnim6df000u6k95empdgshk" class="article-share-link">Share</a>
       
       
     </footer>
@@ -1143,7 +1212,7 @@ InterruptedException – 如果任何线程在当前线程等待通知之前或�
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://seadeemo.github.io/1.%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" data-id="clgm25rhr000ucg95d5uj3z6l" class="article-share-link">Share</a>
+      <a data-url="https://seadeemo.github.io/1.%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" data-id="clgnim6dg000v6k958olm2xei" class="article-share-link">Share</a>
       
       
     </footer>
@@ -1191,6 +1260,10 @@ InterruptedException – 如果任何线程在当前线程等待通知之前或�
       <ul>
         
           <li>
+            <a href="/AQS/">AQS(AbstractedQueuedSynchronizer)</a>
+          </li>
+        
+          <li>
             <a href="/%E7%BA%BF%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/">线程间通信</a>
           </li>
         
@@ -1200,10 +1273,6 @@ InterruptedException – 如果任何线程在当前线程等待通知之前或�
         
           <li>
             <a href="/2.%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%89%A7%E8%A1%8C%E5%AD%90%E7%B3%BB%E7%BB%9F/">2.虚拟机执行子系统</a>
-          </li>
-        
-          <li>
-            <a href="/1.MySQL%E7%9A%84%E6%9E%B6%E6%9E%84/">1.MySQL的架构</a>
           </li>
         
           <li>
